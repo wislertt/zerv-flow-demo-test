@@ -1,0 +1,16 @@
+name: ci-push
+
+on:
+    push:
+
+jobs:
+    zerv-versioning:
+        name: zerv-versioning
+        uses: ./.github/workflows/zerv-versioning.yml
+
+    deploy:
+        needs: zerv-versioning
+        uses: ./.github/workflows/deploy.yml
+        with:
+            version: ${{ needs.zerv-versioning.outputs.version }}
+            env: "d" # development

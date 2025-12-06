@@ -41,11 +41,26 @@ jobs:
             - name: Debugging
               id: debugging
               run: |
+                  which zerv
                   echo $(zerv version --output-template "{{ dirty }}")
                   echo $(zerv version --output-template "{{ distance }}")
                   echo $(zerv version --output-template "{{ bumped_branch }}")
                   echo $(zerv version --output-template "{{ hash_int(value=bumped_branch, length=5) }}")
                   echo $(zerv version --bumped-branch test --output-template "{{ hash_int(value=bumped_branch, length=5) }}")
+
+                  # Method 1: Using GitHub context (most common)
+                  current_branch="${{ github.ref_name }}"
+                  echo "Current branch (github.ref_name): $current_branch"
+
+                  # Method 2: Using git command
+                  git_branch=$(git rev-parse --abbrev-ref HEAD)
+                  echo "Current branch (git command): $git_branch"
+
+                  # Method 3: Using GITHUB_HEAD_REF (for PRs)
+                  echo "GITHUB_HEAD_REF: ${{ github.head_ref }}"
+
+                  # Method 4: Using GITHUB_REF (full ref)
+                  echo "GITHUB_REF: ${{ github.ref }}"
 
             - name: Generate version
               id: get-version
