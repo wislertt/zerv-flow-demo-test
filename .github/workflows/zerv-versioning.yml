@@ -65,7 +65,7 @@ jobs:
             - name: Generate version
               id: get-version
               run: |
-                  VERSION=$(zerv flow)
+                  VERSION=$(zerv flow --bumped-branch "${{ github.head_ref || github.ref_name }}")
                   echo "Generated version: $VERSION"
                   echo "version=$VERSION" >> $GITHUB_OUTPUT
 
