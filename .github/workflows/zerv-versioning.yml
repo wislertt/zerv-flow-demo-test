@@ -30,10 +30,10 @@ jobs:
                       ~/.cargo/registry/index/
                       ~/.cargo/registry/cache/
                       ~/.cargo/git/db/
-                  key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}-${{ github.run_id }}-zerv
+                  key: cargo-zerv-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
                   restore-keys: |
-                      cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
-                      cargo-${{ runner.os }}-
+                      cargo-zerv-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+                      cargo-zerv-${{ runner.os }}-
 
             - name: Install zerv
               run: cargo install zerv || true
@@ -67,4 +67,4 @@ jobs:
                       ~/.cargo/registry/index/
                       ~/.cargo/registry/cache/
                       ~/.cargo/git/db/
-                  key: cargo-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}-${{ github.run_id }}-zerv
+                  key: cargo-zerv-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
