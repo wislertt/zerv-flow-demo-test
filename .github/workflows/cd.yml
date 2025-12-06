@@ -55,3 +55,15 @@ jobs:
                       echo "published=${{ steps.release.outputs.new_release_published }}" >> $GITHUB_OUTPUT
                       echo "New release: ${{ steps.release.outputs.new_release_version }}"
                   fi
+
+    debug-versioning:
+        name: Debug Versioning Outputs
+        runs-on: ubuntu-latest
+        needs: versioning
+        steps:
+            - name: Echo versioning outputs
+              run: |
+                  echo "=== Versioning Job Debug Output ==="
+                  echo "new_release_version: ${{ needs.versioning.outputs.new_release_version }}"
+                  echo "new_release_published: ${{ needs.versioning.outputs.new_release_published }}"
+                  echo "===================================="
