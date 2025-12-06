@@ -44,6 +44,13 @@ jobs:
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
                   COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
 
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                      EVENT_DESC="PR (pull_request)"
+                  else
+                      EVENT_DESC="${{ github.event_name }}"
+                  fi
+                  echo "Event type: $EVENT_DESC"
+
                   echo "Generating version for branch: $BRANCH_NAME"
                   echo "Using commit hash: $COMMIT_HASH"
 
