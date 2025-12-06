@@ -57,13 +57,13 @@ jobs:
                   fi
 
     test:
-        uses: ./.github/workflows/test.yaml
+        uses: ./.github/workflows/test.yml
         secrets:
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
             CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     deploy:
         needs: versioning
-        uses: ./.github/workflows/deploy.yaml
+        uses: ./.github/workflows/deploy.yml
         with:
             version: ${{ needs.versioning.outputs.new_release_version }}
