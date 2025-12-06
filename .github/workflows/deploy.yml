@@ -10,7 +10,6 @@ on:
 
 jobs:
     deploy:
-        name: Debug Versioning Outputs
         runs-on: ubuntu-latest
         steps:
             - name: Echo versioning outputs
