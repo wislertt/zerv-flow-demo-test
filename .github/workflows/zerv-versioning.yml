@@ -1,14 +1,14 @@
-name: Generate Version
+name: zerv-versioning
 
 on:
     workflow_call:
         outputs:
             version:
                 description: "Generated version"
-                value: ${{ jobs.generate-version.outputs.version }}
+                value: ${{ jobs.zerv-versioning.outputs.version }}
 
 jobs:
-    generate-version:
+    zerv-versioning:
         name: Generate version using zerv
         runs-on: ubuntu-latest
         outputs:
@@ -37,6 +37,14 @@ jobs:
 
             - name: Install zerv
               run: cargo install zerv
+
+            - name: Debugging
+              id: debugging
+              run: |
+                  echo $(zerv version --output-template "{{ dirty }}")
+                  echo $(zerv version --output-template "{{ distance }}")
+                  echo $(zerv version --output-template "{{ bumped_branch }}")
+                  echo $(zerv version --output-template "{{ hash_int(value=bumped_branch, length=5) }}")
 
             - name: Generate version
               id: get-version
