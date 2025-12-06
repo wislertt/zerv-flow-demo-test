@@ -38,23 +38,19 @@ jobs:
             - name: Install zerv
               run: cargo install zerv || true
 
-            - name: Debugging
-              id: debugging
-              run: |
-                  which zerv
-
-                  # Simple conditional to get the correct commit hash for both PR and push
-                  echo "github.event.pull_request.head.sha: ${{ github.event.pull_request.head.sha }}"
-                  echo "github.sha: ${{ github.sha }}"
-                  latest_commit="${{ github.event.pull_request.head.sha || github.sha }}"
-                  echo "Latest commit hash: $latest_commit"
-                  echo "GitHub context type: ${{ github.event_name }}"
-                  echo "Is PR? ${{ github.event_name == 'pull_request' && 'true' || 'false' }}"
-
             - name: Generate version
               id: get-version
               run: |
-                  VERSION=$(zerv flow --bumped-branch "${{ github.head_ref || github.ref_name }}" --bumped-commit-hash "g${{ github.event.pull_request.head.sha || github.sha }}")
+                  BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+                  COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
+
+                  echo "Generating version for branch: $BRANCH_NAME"
+                  echo "Using commit hash: $COMMIT_HASH"
+
+                  VERSION=$(zerv flow \
+                      --bumped-branch "$BRANCH_NAME" \
+                      --bumped-commit-hash "g$COMMIT_HASH")
+
                   echo "Generated version: $VERSION"
                   echo "version=$VERSION" >> $GITHUB_OUTPUT
 
