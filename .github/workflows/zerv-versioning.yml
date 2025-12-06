@@ -9,7 +9,7 @@ on:
 
 jobs:
     zerv-versioning:
-        name: Generate version using zerv
+        name: zerv-versioning
         runs-on: ubuntu-latest
         outputs:
             version: ${{ steps.get-version.outputs.version }}
@@ -45,6 +45,7 @@ jobs:
                   echo $(zerv version --output-template "{{ distance }}")
                   echo $(zerv version --output-template "{{ bumped_branch }}")
                   echo $(zerv version --output-template "{{ hash_int(value=bumped_branch, length=5) }}")
+                  echo $(zerv version --bumped-branch test --output-template "{{ hash_int(value=bumped_branch, length=5) }}")
 
             - name: Generate version
               id: get-version

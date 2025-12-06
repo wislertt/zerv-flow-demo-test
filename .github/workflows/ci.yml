@@ -6,7 +6,7 @@ on:
 
 jobs:
     zerv-versioning:
-        name: Generate version
+        name: zerv-versioning
         uses: ./.github/workflows/zerv-versioning.yml
 
     test:
