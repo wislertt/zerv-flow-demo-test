@@ -56,14 +56,14 @@ jobs:
                       echo "New release: ${{ steps.release.outputs.new_release_version }}"
                   fi
 
-    debug-versioning:
-        name: Debug Versioning Outputs
-        runs-on: ubuntu-latest
+    test:
+        uses: ./.github/workflows/test.yaml
+        secrets:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    deploy:
         needs: versioning
-        steps:
-            - name: Echo versioning outputs
-              run: |
-                  echo "=== Versioning Job Debug Output ==="
-                  echo "new_release_version: ${{ needs.versioning.outputs.new_release_version }}"
-                  echo "new_release_published: ${{ needs.versioning.outputs.new_release_published }}"
-                  echo "===================================="
+        uses: ./.github/workflows/deploy.yaml
+        with:
+            version: ${{ needs.versioning.outputs.new_release_version }}
