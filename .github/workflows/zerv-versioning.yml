@@ -48,19 +48,19 @@ jobs:
                   echo $(zerv version --output-template "{{ hash_int(value=bumped_branch, length=5) }}")
                   echo $(zerv version --bumped-branch test --output-template "{{ hash_int(value=bumped_branch, length=5) }}")
 
-                  # Method 1: Using GitHub context (most common)
-                  current_branch="${{ github.ref_name }}"
-                  echo "Current branch (github.ref_name): $current_branch"
+                  # Always get the correct branch name (works for both PR and push)
+                  if [ -n "${{ github.head_ref }}" ]; then
+                      # This is a PR, use the source branch
+                      current_branch="${{ github.head_ref }}"
+                  else
+                      # This is a regular push, use the ref_name
+                      current_branch="${{ github.ref_name }}"
+                  fi
+                  echo "Current branch: $current_branch"
 
-                  # Method 2: Using git command
-                  git_branch=$(git rev-parse --abbrev-ref HEAD)
-                  echo "Current branch (git command): $git_branch"
-
-                  # Method 3: Using GITHUB_HEAD_REF (for PRs)
-                  echo "GITHUB_HEAD_REF: ${{ github.head_ref }}"
-
-                  # Method 4: Using GITHUB_REF (full ref)
-                  echo "GITHUB_REF: ${{ github.ref }}"
+                  # Alternative using bash conditional
+                  current_branch_alt="${{ github.head_ref || github.ref_name }}"
+                  echo "Current branch (alternative): $current_branch_alt"
 
             - name: Generate version
               id: get-version
