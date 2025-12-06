@@ -42,25 +42,14 @@ jobs:
               id: debugging
               run: |
                   which zerv
-                  echo $(zerv version --output-template "{{ dirty }}")
-                  echo $(zerv version --output-template "{{ distance }}")
-                  echo $(zerv version --output-template "{{ bumped_branch }}")
-                  echo $(zerv version --output-template "{{ hash_int(value=bumped_branch, length=5) }}")
-                  echo $(zerv version --bumped-branch test --output-template "{{ hash_int(value=bumped_branch, length=5) }}")
 
-                  # Always get the correct branch name (works for both PR and push)
-                  if [ -n "${{ github.head_ref }}" ]; then
-                      # This is a PR, use the source branch
-                      current_branch="${{ github.head_ref }}"
-                  else
-                      # This is a regular push, use the ref_name
-                      current_branch="${{ github.ref_name }}"
-                  fi
-                  echo "Current branch: $current_branch"
-
-                  # Alternative using bash conditional
-                  current_branch_alt="${{ github.head_ref || github.ref_name }}"
-                  echo "Current branch (alternative): $current_branch_alt"
+                  # Simple conditional to get the correct commit hash for both PR and push
+                  echo "github.event.pull_request.head.sha: ${{ github.event.pull_request.head.sha }}"
+                  echo "github.sha: ${{ github.sha }}"
+                  latest_commit="${{ github.event.pull_request.head.sha || github.sha }}"
+                  echo "Latest commit hash: $latest_commit"
+                  echo "GitHub context type: ${{ github.event_name }}"
+                  echo "Is PR? ${{ github.event_name == 'pull_request' && 'true' || 'false' }}"
 
             - name: Generate version
               id: get-version
