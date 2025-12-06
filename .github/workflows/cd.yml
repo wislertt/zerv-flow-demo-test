@@ -67,3 +67,4 @@ jobs:
         uses: ./.github/workflows/deploy.yml
         with:
             version: ${{ needs.versioning.outputs.new_release_version }}
+            env: "p" # production

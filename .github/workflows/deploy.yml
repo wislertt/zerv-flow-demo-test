@@ -7,6 +7,10 @@ on:
                 description: "Version to deploy"
                 required: true
                 type: string
+            env:
+                description: "Environment code"
+                required: true
+                type: string
 
 jobs:
     deploy:
@@ -14,4 +18,4 @@ jobs:
         steps:
             - name: Echo versioning outputs
               run: |
-                  echo "Deploying version: ${{ inputs.version }}"
+                  echo "Deploying version: ${{ inputs.version }} at ${{ inputs.env }}"
