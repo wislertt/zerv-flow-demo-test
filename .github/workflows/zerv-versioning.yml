@@ -71,6 +71,10 @@ jobs:
                   echo "pep440=$PEP440" >> $GITHUB_OUTPUT
                   echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
 
+            - name: Debugging
+              run: |
+                  zerv version --output-template "{{ dirty }}"
+
             - name: Display generated versions
               run: |
                   echo "SemVer: ${{ steps.get-version.outputs.semver }}"
