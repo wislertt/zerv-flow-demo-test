@@ -22,5 +22,7 @@ jobs:
         needs: zerv-versioning
         uses: ./.github/workflows/deploy.yml
         with:
-            version: ${{ needs.zerv-versioning.outputs.version }}
+            semver: ${{ needs.zerv-versioning.outputs.semver }}
+            pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
+            docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
             env: "d" # development

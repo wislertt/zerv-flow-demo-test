@@ -65,6 +65,12 @@ jobs:
                   echo "pep440=$PEP440" >> $GITHUB_OUTPUT
                   echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
 
+            - name: Display generated versions
+              run: |
+                  echo "SemVer: ${{ steps.get-version.outputs.semver }}"
+                  echo "PEP440: ${{ steps.get-version.outputs.pep440 }}"
+                  echo "Docker Tag: ${{ steps.get-version.outputs.docker_tag }}"
+
             - name: Save cache
               uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
               if: always()
