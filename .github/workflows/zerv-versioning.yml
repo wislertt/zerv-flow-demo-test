@@ -59,6 +59,7 @@ jobs:
 
                   if [ -n "${{ inputs.overridden_tag_version }}" ]; then
                       OVERRIDDEN_TAG_VERSION="--tag-version ${{ inputs.overridden_tag_version }}"
+                  fi
 
                   ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
