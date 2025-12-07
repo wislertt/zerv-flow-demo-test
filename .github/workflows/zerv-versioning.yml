@@ -2,6 +2,9 @@ name: zerv-versioning
 
 on:
     workflow_call:
+        inputs:
+            overridden_tag_version:
+                type: string
         outputs:
             semver:
                 value: ${{ jobs.zerv-versioning.outputs.semver }}
@@ -54,11 +57,17 @@ jobs:
                       DISTANCE=$((DISTANCE - 1))
                   fi
 
+                  if [ -n "${{ inputs.overridden_tag_version }}" ]; then
+                      OVERRIDDEN_TAG_VERSION="--tag-version ${{ inputs.overridden_tag_version }}"
+
                   ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
                       --bumped-commit-hash "$COMMIT_HASH" \
                       --distance $DISTANCE \
+                      $OVERRIDDEN_TAG_VERSION \
                       --output-format zerv)
+
+                  #### ---------------
 
                   SEMVER=$(echo $ZERV_RON | \
                     zerv version --source stdin --output-format semver)
