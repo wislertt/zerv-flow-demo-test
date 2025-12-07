@@ -66,4 +66,7 @@ jobs:
         needs: versioning
         uses: ./.github/workflows/deploy.yml
         with:
-            version: ${{ needs.versioning.outputs.new_release_version }}
+            semver: ${{ needs.versioning.outputs.new_release_version }}
+            pep440: some-pep440
+            docker_tag: some-docker-tag
+            env: "p" # production

@@ -3,8 +3,17 @@ name: pre-commit
 on:
     workflow_call:
         inputs:
-            version:
-                description: "Version to deploy"
+            semver:
+                required: true
+                type: string
+            pep440:
+                required: true
+                type: string
+            docker_tag:
+                required: true
+                type: string
+            env:
+                description: "Environment code"
                 required: true
                 type: string
 
@@ -14,4 +23,7 @@ jobs:
         steps:
             - name: Echo versioning outputs
               run: |
-                  echo "Deploying version: ${{ inputs.version }}"
+                  echo "Deploying at env: ${{ inputs.env }}"
+                  echo "Semver: ${{ inputs.semver }}"
+                  echo "PEP440: ${{ inputs.pep440 }}"
+                  echo "Docker Tag: ${{ inputs.docker_tag }}"

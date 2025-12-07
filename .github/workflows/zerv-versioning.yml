@@ -1,0 +1,93 @@
+name: zerv-versioning
+
+on:
+    workflow_call:
+        outputs:
+            semver:
+                value: ${{ jobs.zerv-versioning.outputs.semver }}
+            pep440:
+                value: ${{ jobs.zerv-versioning.outputs.pep440 }}
+            docker_tag:
+                value: ${{ jobs.zerv-versioning.outputs.docker_tag }}
+
+jobs:
+    zerv-versioning:
+        name: zerv-versioning
+        runs-on: ubuntu-latest
+        outputs:
+            semver: ${{ steps.get-version.outputs.semver }}
+            pep440: ${{ steps.get-version.outputs.pep440 }}
+            docker_tag: ${{ steps.get-version.outputs.docker_tag }}
+        steps:
+            - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+              with:
+                  fetch-depth: 0
+
+            - uses: dtolnay/rust-toolchain@0b1efabc08b657293548b77fb76cc02d26091c7e # stable
+              with:
+                  toolchain: stable
+
+            - name: Restore cache
+              uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+              with:
+                  path: |
+                      ~/.cargo/bin/
+                      ~/.cargo/registry/index/
+                      ~/.cargo/registry/cache/
+                      ~/.cargo/git/db/
+                  key: cargo-zerv-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+                  restore-keys: |
+                      cargo-zerv-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+                      cargo-zerv-${{ runner.os }}-
+
+            - name: Install zerv
+              run: cargo install zerv || true
+
+            - name: Generate version
+              id: get-version
+              run: |
+                  BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+                  COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
+                  DISTANCE=$(($(zerv version --output-template "{{ distance }}")))
+
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                      DISTANCE=$((DISTANCE - 1))
+                  fi
+
+                  ZERV_RON=$(zerv flow \
+                      --bumped-branch "$BRANCH_NAME" \
+                      --bumped-commit-hash "$COMMIT_HASH" \
+                      --distance $DISTANCE \
+                      --output-format zerv)
+
+                  SEMVER=$(echo $ZERV_RON | \
+                    zerv version --source stdin --output-format semver)
+                  PEP440=$(echo $ZERV_RON | \
+                    zerv version --source stdin --output-format pep440)
+                  DOCKER_TAG=$(echo $ZERV_RON | \
+                    zerv version --source stdin --output-template "{{ semver_obj.docker }}")
+
+                  echo "semver=$SEMVER" >> $GITHUB_OUTPUT
+                  echo "pep440=$PEP440" >> $GITHUB_OUTPUT
+                  echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+
+            - name: Debugging
+              run: |
+                  zerv version --output-template "{{ dirty }}"
+
+            - name: Display generated versions
+              run: |
+                  echo "SemVer: ${{ steps.get-version.outputs.semver }}"
+                  echo "PEP440: ${{ steps.get-version.outputs.pep440 }}"
+                  echo "Docker Tag: ${{ steps.get-version.outputs.docker_tag }}"
+
+            - name: Save cache
+              uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+              if: always()
+              with:
+                  path: |
+                      ~/.cargo/bin/
+                      ~/.cargo/registry/index/
+                      ~/.cargo/registry/cache/
+                      ~/.cargo/git/db/
+                  key: cargo-zerv-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
