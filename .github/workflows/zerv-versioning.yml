@@ -43,24 +43,31 @@ jobs:
               run: |
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
                   COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
+                  ZERV_RON=$(zerv flow \
+                      --bumped-branch "$BRANCH_NAME" \
+                      --bumped-commit-hash "$COMMIT_HASH" \
+                      --output-format zerv)
 
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
-                      DISTANCE="--distance $(($(zerv flow --output-template "{{ distance }}") - 1))"
-                  else
-                      DISTANCE=""
-                  fi
+                      DISTANCE=$(($(zerv version --output-template "{{ distance }}") - 1))
+                      ZERV_RON=$(echo $ZERV_RON | \
+                        zerv version --source stdin --distance $DISTANCE --output-format zerv)
 
-                  echo "Generating version for branch: $BRANCH_NAME"
-                  echo "Using commit hash: $COMMIT_HASH"
-                  echo "Distance parameter: $DISTANCE"
+                  SEMVER=$(echo $ZERV_RON | \
+                    zerv version --source stdin --output-format semver)
+                  PEP440=$(echo $ZERV_RON | \
+                    zerv version --source stdin --output-format pep440)
+                  DOCKER_TAG=$(echo $ZERV_RON | \
+                    zerv version --source stdin --output-template "{{ semver_obj.docker }}")
 
-                  VERSION=$(zerv flow \
+
+                  ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
-                      --bumped-commit-hash "g$COMMIT_HASH" \
-                      $DISTANCE)
+                      --bumped-commit-hash "g$COMMIT_HASH")
 
-                  echo "Generated version: $VERSION"
-                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+                  echo "semver=$SEMVER" >> $GITHUB_OUTPUT
+                  echo "pep440=$PEP440" >> $GITHUB_OUTPUT
+                  echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
 
             - name: Save cache
               uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
