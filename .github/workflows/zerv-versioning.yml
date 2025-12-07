@@ -52,6 +52,7 @@ jobs:
                       DISTANCE=$(($(zerv version --output-template "{{ distance }}") - 1))
                       ZERV_RON=$(echo $ZERV_RON | \
                         zerv version --source stdin --distance $DISTANCE --output-format zerv)
+                  fi
 
                   SEMVER=$(echo $ZERV_RON | \
                     zerv version --source stdin --output-format semver)
@@ -59,11 +60,6 @@ jobs:
                     zerv version --source stdin --output-format pep440)
                   DOCKER_TAG=$(echo $ZERV_RON | \
                     zerv version --source stdin --output-template "{{ semver_obj.docker }}")
-
-
-                  ZERV_RON=$(zerv flow \
-                      --bumped-branch "$BRANCH_NAME" \
-                      --bumped-commit-hash "g$COMMIT_HASH")
 
                   echo "semver=$SEMVER" >> $GITHUB_OUTPUT
                   echo "pep440=$PEP440" >> $GITHUB_OUTPUT
