@@ -40,14 +40,12 @@ jobs:
 
             - name: Generate version
               id: get-version
-              # TODO: if event type = pull_request --> distance = distance - 1
               run: |
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
                   COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
 
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
-                      # DISTANCE="--distance {{ distance - 1 }}"
-                      DISTANCE="--distance 100"
+                      DISTANCE="--distance $(($(zerv flow --output-template "{{ distance }}") - 1))"
                   else
                       DISTANCE=""
                   fi
