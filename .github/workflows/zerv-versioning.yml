@@ -3,9 +3,12 @@ name: zerv-versioning
 on:
     workflow_call:
         outputs:
-            version:
-                description: "Generated version"
-                value: ${{ jobs.zerv-versioning.outputs.version }}
+            semver:
+                value: ${{ jobs.zerv-versioning.outputs.semver }}
+            pep440:
+                value: ${{ jobs.zerv-versioning.outputs.pep440 }}
+            docker_tag:
+                value: ${{ jobs.zerv-versioning.outputs.docker_tag }}
 
 jobs:
     zerv-versioning:
