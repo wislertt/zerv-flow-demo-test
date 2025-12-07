@@ -9,7 +9,7 @@ jobs:
         name: zerv-versioning
         uses: ./.github/workflows/zerv-versioning.yml
         with:
-            overridden_tag_version: "1.2.400"
+            overridden_tag_version: "1.2.400-rc.5"
 
     test:
         uses: ./.github/workflows/test.yml
