@@ -12,7 +12,9 @@ jobs:
         name: zerv-versioning
         runs-on: ubuntu-latest
         outputs:
-            version: ${{ steps.get-version.outputs.version }}
+            semver: ${{ steps.get-version.outputs.semver }}
+            pep440: ${{ steps.get-version.outputs.pep440 }}
+            docker_tag: ${{ steps.get-version.outputs.docker_tag }}
         steps:
             - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
               with:
