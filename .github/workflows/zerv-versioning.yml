@@ -48,16 +48,24 @@ jobs:
               run: |
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
                   COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
+                  DISTANCE=$(($(zerv version --output-template "{{ distance }}")))
+
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                      DISTANCE=$((DISTANCE - 1))
+                  fi
+
+
                   ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
                       --bumped-commit-hash "$COMMIT_HASH" \
+                      --distance $DISTANCE \
                       --output-format zerv)
 
-                  if [ "${{ github.event_name }}" = "pull_request" ]; then
-                      DISTANCE=$(($(zerv version --output-template "{{ distance }}") - 1))
-                      ZERV_RON=$(echo $ZERV_RON | \
-                        zerv version --source stdin --distance $DISTANCE --output-format zerv)
-                  fi
+                    # if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    #     DISTANCE=$(($(zerv version --output-template "{{ distance }}") - 1))
+                    #     ZERV_RON=$(echo $ZERV_RON | \
+                    #         zerv version --source stdin --distance $DISTANCE --output-format zerv)
+                    # fi
 
                   SEMVER=$(echo $ZERV_RON | \
                     zerv version --source stdin --output-format semver)
