@@ -40,23 +40,26 @@ jobs:
 
             - name: Generate version
               id: get-version
+              # TODO: if event type = pull_request --> distance = distance - 1
               run: |
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
                   COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
 
                   if [ "${{ github.event_name }}" = "pull_request" ]; then
-                      EVENT_DESC="PR (pull_request)"
+                      # DISTANCE="--distance {{ distance - 1 }}"
+                      DISTANCE="--distance 100"
                   else
-                      EVENT_DESC="${{ github.event_name }}"
+                      DISTANCE=""
                   fi
-                  echo "Event type: $EVENT_DESC"
 
                   echo "Generating version for branch: $BRANCH_NAME"
                   echo "Using commit hash: $COMMIT_HASH"
+                  echo "Distance parameter: $DISTANCE"
 
                   VERSION=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
-                      --bumped-commit-hash "g$COMMIT_HASH")
+                      --bumped-commit-hash "g$COMMIT_HASH" \
+                      $DISTANCE)
 
                   echo "Generated version: $VERSION"
                   echo "version=$VERSION" >> $GITHUB_OUTPUT
