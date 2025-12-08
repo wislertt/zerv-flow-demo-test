@@ -5,6 +5,14 @@ on:
         inputs:
             overridden_tag_version:
                 type: string
+            branch_rules:
+                type: string
+                default: |
+                    [
+                        (pattern:"develop", pre_release_label:beta, pre_release_num:Some(1), post_mode:commit),
+                        (pattern:"release/*", pre_release_label:rc, pre_release_num:None, post_mode:tag)
+                    ]
+
         outputs:
             semver:
                 value: ${{ jobs.zerv-versioning.outputs.semver }}
@@ -56,13 +64,17 @@ jobs:
                   git checkout $COMMIT_HASH
 
                   if [ -n "${{ inputs.overridden_tag_version }}" ]; then
-                      OVERRIDDEN_TAG_VERSION="--tag-version ${{ inputs.overridden_tag_version }}"
+                      OVERRIDDEN_TAG_VERSION_FLAG="--tag-version ${{ inputs.overridden_tag_version }}"
                   fi
+
+                  # Prepare branch rules for shell (remove newlines and extra spaces)
+                  BRANCH_RULES=$(echo '${{ inputs.branch_rules }}' | tr -d '\n' | tr -s ' ')
 
                   ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
                       --bumped-commit-hash "g$COMMIT_HASH" \
-                      $OVERRIDDEN_TAG_VERSION \
+                      $OVERRIDDEN_TAG_VERSION_FLAG \
+                      --branch-rules "$BRANCH_RULES" \
                       --output-format zerv)
 
                   #### ---------------
