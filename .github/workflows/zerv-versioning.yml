@@ -22,7 +22,7 @@ on:
                             pattern: "release/*",
                             pre_release_label: rc,
                             pre_release_num:None, p
-                            ost_mode:tag
+                            post_mode: tag
                         )
                     ]
 
