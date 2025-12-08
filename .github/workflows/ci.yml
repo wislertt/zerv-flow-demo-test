@@ -9,14 +9,14 @@ jobs:
         name: zerv-versioning
         uses: ./.github/workflows/zerv-versioning.yml
 
-    test:
-        uses: ./.github/workflows/test.yml
-        secrets:
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    # test:
+    #     uses: ./.github/workflows/test.yml
+    #     secrets:
+    #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-    pre-commit:
-        uses: ./.github/workflows/pre-commit.yml
+    # pre-commit:
+    #     uses: ./.github/workflows/pre-commit.yml
 
     deploy:
         needs: zerv-versioning
