@@ -39,6 +39,7 @@ jobs:
                   target_commitish: ${{ github.head_ref }}
                   generate_release_notes: true
                   prerelease: true
+                  append_body: false
                   #   make_latest: false
             #   env:
             #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
