@@ -12,8 +12,18 @@ on:
                 type: string
                 default: |
                     [
-                        (pattern:"develop", pre_release_label:beta, pre_release_num:Some(1), post_mode:commit),
-                        (pattern:"release/*", pre_release_label:rc, pre_release_num:None, post_mode:tag)
+                        (
+                            pattern: "develop",
+                            pre_release_label: beta,
+                            pre_release_num: Some(1),
+                            post_mode: commit
+                        ),
+                        (
+                            pattern: "release/*",
+                            pre_release_label: rc,
+                            pre_release_num:None, p
+                            ost_mode:tag
+                        )
                     ]
 
         outputs:
