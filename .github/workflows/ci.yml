@@ -42,9 +42,6 @@ jobs:
                   append_body: false
                   body: |
                       Pre-release from branch `${{ github.head_ref }}` (PR #${{ github.event.number }})
-                  #   make_latest: false
-            #   env:
-            #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     # test:
     #     uses: ./.github/workflows/test.yml
@@ -62,4 +59,3 @@ jobs:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
             pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
-            env: "d" # development

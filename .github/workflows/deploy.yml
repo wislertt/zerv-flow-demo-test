@@ -12,18 +12,17 @@ on:
             docker_tag:
                 required: true
                 type: string
-            env:
-                description: "Environment code"
-                required: true
-                type: string
 
 jobs:
     deploy:
         runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                env: [d, n, p]
         steps:
             - name: Echo versioning outputs
               run: |
-                  echo "Deploying at env: ${{ inputs.env }}"
+                  echo "Deploying at env: ${{ matrix.env }}"
                   echo "Semver: ${{ inputs.semver }}"
                   echo "PEP440: ${{ inputs.pep440 }}"
                   echo "Docker Tag: ${{ inputs.docker_tag }}"
