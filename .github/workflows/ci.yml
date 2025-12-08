@@ -18,13 +18,7 @@ jobs:
         needs: check-pre-release-label
         uses: ./.github/workflows/zerv-versioning.yml
         with:
-            schema: |
-                ${{
-                    (
-                        needs.check-pre-release-label.outputs.has_label == 'true' &&
-                        'standard-base-prerelease-post'
-                    ) || ''
-                }}
+            schema: ${{ (needs.check-pre-release-label.outputs.has_label == 'true' && 'standard-base-prerelease-post') || '' }}
 
     # test:
     #     uses: ./.github/workflows/test.yml
