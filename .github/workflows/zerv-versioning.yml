@@ -50,7 +50,7 @@ jobs:
               id: get-version
               run: |
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
-                  COMMIT_HASH="g${{ github.event.pull_request.head.sha || github.sha }}"
+                  COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
 
                   git checkout $COMMIT_HASH
 
@@ -60,7 +60,7 @@ jobs:
 
                   ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
-                      --bumped-commit-hash "$COMMIT_HASH" \
+                      --bumped-commit-hash "g$COMMIT_HASH" \
                       $OVERRIDDEN_TAG_VERSION \
                       --output-format zerv)
 
