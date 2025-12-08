@@ -4,12 +4,44 @@ on:
     # Rulesets for main branch
     # - Require status checks to pass -> Require branches to be up to date before merging
     pull_request:
-        types: [opened, synchronize, reopened]
+        types: [labeled, unlabeled, opened, synchronize, reopened]
 
 jobs:
+    check-pre-release-label:
+        name: check-pre-release-label
+        uses: ./.github/workflows/check-pr-label.yml
+        with:
+            labels: ${{ toJSON(github.event.pull_request.labels) }}
+            target_label: "pre-release"
+
     zerv-versioning:
         name: zerv-versioning
+        needs: check-pre-release-label
         uses: ./.github/workflows/zerv-versioning.yml
+        with:
+            schema: ${{ (needs.check-pre-release-label.outputs.has_label == 'true' && 'standard-base-prerelease-post') || '' }}
+
+    tag-release:
+        name: tag-release
+        needs: [zerv-versioning, check-pre-release-label]
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        if: needs.check-pre-release-label.outputs.has_label == 'true'
+        steps:
+            - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+            - name: Create Release
+              uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+              with:
+                  tag_name: "v${{ needs.zerv-versioning.outputs.semver }}"
+                  name: "v${{ needs.zerv-versioning.outputs.semver }}"
+                  target_commitish: ${{ github.head_ref }}
+                  generate_release_notes: true
+                  prerelease: true
+                  append_body: false
+                  body: |
+                      Pre-release from branch `${{ github.head_ref }}` (PR #${{ github.event.number }})
 
     # test:
     #     uses: ./.github/workflows/test.yml
@@ -21,10 +53,9 @@ jobs:
     #     uses: ./.github/workflows/pre-commit.yml
 
     deploy:
-        needs: zerv-versioning
+        needs: [zerv-versioning, check-pre-release-label]
         uses: ./.github/workflows/deploy.yml
         with:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
             pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
-            env: "d" # development
