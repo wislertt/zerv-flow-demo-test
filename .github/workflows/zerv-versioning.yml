@@ -48,6 +48,7 @@ jobs:
 
             - name: Generate version
               id: get-version
+              # Support github.event_name == 'pull_request' or 'push'
               run: |
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
                   COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
