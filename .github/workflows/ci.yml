@@ -1,37 +1,15 @@
 name: ci
 
 on:
+    # Rulesets for main branch
+    # - Require status checks to pass -> Require branches to be up to date before merging
     pull_request:
         types: [opened, synchronize, reopened]
 
 jobs:
-    main-sync-validation:
-        name: Check PR is up-to-date with main
-        runs-on: ubuntu-latest
-        if: github.base_ref == 'main'
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-
-            - name: Check if PR branch is behind main
-              run: |
-                  echo "Checking if PR branch is behind main..."
-                  git fetch origin main
-                  BEHIND=$(git rev-list --count HEAD..origin/main)
-                  if [ "$BEHIND" -gt 0 ]; then
-                    echo "::error::PR branch is $BEHIND commits behind main. Please update your branch."
-                    echo "::error::Run 'git fetch origin' and 'git rebase origin/main' to update."
-                    exit 1
-                  else
-                    echo "PR branch is up-to-date with main."
-                  fi
-
     zerv-versioning:
         name: zerv-versioning
         uses: ./.github/workflows/zerv-versioning.yml
-        needs: main-sync-validation
 
     # test:
     #     uses: ./.github/workflows/test.yml
