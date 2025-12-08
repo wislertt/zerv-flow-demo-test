@@ -50,7 +50,7 @@ jobs:
               id: get-version
               run: |
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
-                  COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
+                  COMMIT_HASH="g${{ github.event.pull_request.head.sha || github.sha }}"
 
                   git checkout $COMMIT_HASH
 
