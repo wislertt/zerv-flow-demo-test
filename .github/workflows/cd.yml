@@ -75,4 +75,3 @@ jobs:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
             pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
-            env: "p" # production
