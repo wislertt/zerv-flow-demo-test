@@ -52,13 +52,7 @@ jobs:
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
                   COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
 
-                  # Checkout to the specific commit hash to ensure we're working with the actual PR commit
                   git checkout $COMMIT_HASH
-                  #   DISTANCE=$(($(zerv version --output-template "{{ distance }}")))
-
-                  #   if [ "${{ github.event_name }}" = "pull_request" ]; then
-                  #       DISTANCE=$((DISTANCE - 1))
-                  #   fi
 
                   if [ -n "${{ inputs.overridden_tag_version }}" ]; then
                       OVERRIDDEN_TAG_VERSION="--tag-version ${{ inputs.overridden_tag_version }}"
