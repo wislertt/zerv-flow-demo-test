@@ -7,9 +7,24 @@ on:
         types: [opened, synchronize, reopened]
 
 jobs:
+    check-pre-release-label:
+        name: Check Pre-release Label
+        uses: ./.github/workflows/check-pr-label.yml
+        with:
+            label: "pre-release"
+
     zerv-versioning:
         name: zerv-versioning
+        needs: check-pre-release-label
         uses: ./.github/workflows/zerv-versioning.yml
+        with:
+            schema: |
+                ${{
+                    (
+                        needs.check-pre-release-label.outputs.has_label == 'true' &&
+                        'standard-base-prerelease-post'
+                    ) || ''
+                }}
 
     # test:
     #     uses: ./.github/workflows/test.yml

@@ -7,9 +7,9 @@ jobs:
     zerv-versioning:
         name: zerv-versioning
         uses: ./.github/workflows/zerv-versioning.yml
-        with:
-            # schema: standard-base-prerelease-post
-            schema: ""
+        # with:
+        #     # schema: standard-base-prerelease-post
+        #     schema: ""
 
     deploy:
         needs: zerv-versioning

@@ -1,0 +1,37 @@
+name: Check PR Label
+
+on:
+    workflow_call:
+        inputs:
+            label:
+                required: true
+                type: string
+                description: "Label to check for in the PR"
+        outputs:
+            has_label:
+                value: ${{ jobs.check-label.outputs.has_label }}
+
+jobs:
+    check-label:
+        name: Check Label
+        runs-on: ubuntu-latest
+        outputs:
+            has_label: ${{ steps.check.outputs.has_label }}
+        steps:
+            - name: Check for label
+              id: check
+              run: |
+                  # Get all PR labels
+                  LABELS="${{ github.event.pull_request.labels.*.name }}"
+                  TARGET_LABEL="${{ inputs.label }}"
+
+                  echo "Checking for label: $TARGET_LABEL"
+                  echo "PR labels: $LABELS"
+
+                  if echo "$LABELS" | grep -q "$TARGET_LABEL"; then
+                    echo "has_label=true" >> $GITHUB_OUTPUT
+                    echo "✅ Label '$TARGET_LABEL' found"
+                  else
+                    echo "has_label=false" >> $GITHUB_OUTPUT
+                    echo "❌ Label '$TARGET_LABEL' not found"
+                  fi
