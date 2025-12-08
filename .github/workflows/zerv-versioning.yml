@@ -48,6 +48,7 @@ jobs:
 
             - name: Generate version
               id: get-version
+              # Support github.event_name == 'pull_request' or 'push'
               run: |
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
                   COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
@@ -60,7 +61,7 @@ jobs:
 
                   ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
-                      --bumped-commit-hash "$COMMIT_HASH" \
+                      --bumped-commit-hash "g$COMMIT_HASH" \
                       $OVERRIDDEN_TAG_VERSION \
                       --output-format zerv)
 

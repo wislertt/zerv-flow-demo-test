@@ -1,6 +1,8 @@
 name: ci
 
 on:
+    # Rulesets for main branch
+    # - Require status checks to pass -> Require branches to be up to date before merging
     pull_request:
         types: [opened, synchronize, reopened]
 
