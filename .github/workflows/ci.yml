@@ -40,7 +40,8 @@ jobs:
                   generate_release_notes: true
                   prerelease: true
                   append_body: false
-                  body: ""
+                  body: |
+                      Pre-release from branch `${{ github.head_ref }}` (PR #${{ github.event.number }})
                   #   make_latest: false
             #   env:
             #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
