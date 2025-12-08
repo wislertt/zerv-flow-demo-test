@@ -22,7 +22,7 @@ jobs:
             schema: ${{ (needs.check-pre-release-label.outputs.has_label == 'true' && 'standard-base-prerelease-post') || '' }}
 
     tag-release:
-        name: Tag Release
+        name: tag-release
         needs: [zerv-versioning, check-pre-release-label]
         runs-on: ubuntu-latest
         permissions:
@@ -50,7 +50,7 @@ jobs:
     #     uses: ./.github/workflows/pre-commit.yml
 
     deploy:
-        needs: [zerv-versioning, check-pre-release-label, tag-release]
+        needs: [zerv-versioning, check-pre-release-label]
         uses: ./.github/workflows/deploy.yml
         with:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
