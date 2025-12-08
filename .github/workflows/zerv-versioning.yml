@@ -21,7 +21,7 @@ on:
                         (
                             pattern: "release/*",
                             pre_release_label: rc,
-                            pre_release_num:None, p
+                            pre_release_num: None,
                             post_mode: tag
                         )
                     ]
