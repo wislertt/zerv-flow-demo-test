@@ -51,11 +51,8 @@ jobs:
               run: |
                   BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
                   COMMIT_HASH="${{ github.event.pull_request.head.sha || github.sha }}"
-                  DISTANCE=$(($(zerv version --output-template "{{ distance }}")))
 
-                  if [ "${{ github.event_name }}" = "pull_request" ]; then
-                      DISTANCE=$((DISTANCE - 1))
-                  fi
+                  git checkout $COMMIT_HASH
 
                   if [ -n "${{ inputs.overridden_tag_version }}" ]; then
                       OVERRIDDEN_TAG_VERSION="--tag-version ${{ inputs.overridden_tag_version }}"
@@ -64,7 +61,6 @@ jobs:
                   ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
                       --bumped-commit-hash "$COMMIT_HASH" \
-                      --distance $DISTANCE \
                       $OVERRIDDEN_TAG_VERSION \
                       --output-format zerv)
 
