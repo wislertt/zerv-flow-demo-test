@@ -4,14 +4,15 @@ on:
     # Rulesets for main branch
     # - Require status checks to pass -> Require branches to be up to date before merging
     pull_request:
-        types: [opened, synchronize, reopened]
+        types: [labeled, unlabeled, opened, synchronize, reopened]
 
 jobs:
     check-pre-release-label:
-        name: Check Pre-release Label
+        name: check-pre-release-label
         uses: ./.github/workflows/check-pr-label.yml
         with:
-            label: "pre-release"
+            labels: ${{ toJSON(github.event.pull_request.labels) }}
+            target_label: "pre-release"
 
     zerv-versioning:
         name: zerv-versioning
