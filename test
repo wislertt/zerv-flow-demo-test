@@ -4,4 +4,4 @@ zerv flow --bumped-branch develop --branch-rules '[(pattern:"develop",pre_releas
 zerv flow --bumped-branch develop --branch-rules '[(pattern:"develop",pre_release_label:beta,pre_release_num:Some(1),post_mode:commit),(pattern:"release/*",pre_release_label:rc,post_mode:tag)]'
 
 
-zerv flow --schema --branch-rules '[(pattern:"develop",pre_release_label:beta,pre_release_num:Some(1),post_mode:commit),(pattern:"release/*",pre_release_label:rc,post_mode:tag)]'
+zerv flow --schema standard-base-prerelease-post-dev-context --branch-rules '[(pattern:"develop",pre_release_label:beta,pre_release_num:Some(1),post_mode:commit),(pattern:"release/*",pre_release_label:rc,post_mode:tag)]'

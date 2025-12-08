@@ -5,6 +5,9 @@ on:
         inputs:
             overridden_tag_version:
                 type: string
+            schema:
+                type: string
+                description: "Zerv flow schema"
             branch_rules:
                 type: string
                 default: |
@@ -67,6 +70,10 @@ jobs:
                       OVERRIDDEN_TAG_VERSION_FLAG="--tag-version ${{ inputs.overridden_tag_version }}"
                   fi
 
+                  if [ -n "${{ inputs.schema }}" ]; then
+                      SCHEMA_FLAG="--schema ${{ inputs.schema }}"
+                  fi
+
                   # Prepare branch rules for shell (remove newlines and extra spaces)
                   BRANCH_RULES=$(echo '${{ inputs.branch_rules }}' | tr -d '\n' | tr -s ' ')
 
@@ -74,6 +81,7 @@ jobs:
                       --bumped-branch "$BRANCH_NAME" \
                       --bumped-commit-hash "g$COMMIT_HASH" \
                       $OVERRIDDEN_TAG_VERSION_FLAG \
+                      $SCHEMA_FLAG \
                       --branch-rules "$BRANCH_RULES" \
                       --output-format zerv)
 
