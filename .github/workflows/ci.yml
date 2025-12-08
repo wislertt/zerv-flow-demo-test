@@ -36,6 +36,7 @@ jobs:
               with:
                   tag_name: "v${{ needs.zerv-versioning.outputs.semver }}"
                   name: "v${{ needs.zerv-versioning.outputs.semver }}"
+                  target_commitish: ${{ github.head_ref }}
                   generate_release_notes: true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
