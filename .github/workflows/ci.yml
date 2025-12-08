@@ -21,6 +21,25 @@ jobs:
         with:
             schema: ${{ (needs.check-pre-release-label.outputs.has_label == 'true' && 'standard-base-prerelease-post') || '' }}
 
+    tag-release:
+        name: Tag Release
+        needs: [zerv-versioning, check-pre-release-label]
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        if: needs.check-pre-release-label.outputs.has_label == 'true'
+        steps:
+            - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+            - name: Create Release
+              uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+              with:
+                  tag_name: "v${{ needs.zerv-versioning.outputs.semver }}"
+                  name: "v${{ needs.zerv-versioning.outputs.semver }}"
+                  generate_release_notes: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     # test:
     #     uses: ./.github/workflows/test.yml
     #     secrets:
@@ -31,7 +50,7 @@ jobs:
     #     uses: ./.github/workflows/pre-commit.yml
 
     deploy:
-        needs: zerv-versioning
+        needs: [zerv-versioning, check-pre-release-label, tag-release]
         uses: ./.github/workflows/deploy.yml
         with:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
