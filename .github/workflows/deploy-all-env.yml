@@ -1,4 +1,4 @@
-name: deploy
+name: deploy-all-env
 
 on:
     workflow_call:
@@ -19,11 +19,11 @@ on:
                 default: "{}"
 
 jobs:
-    deploy:
+    deploy-all-env:
         strategy:
             matrix:
                 env: [d, n, p]
-        uses: ./.github/workflows/deploy-i.yml
+        uses: ./.github/workflows/deploy-env.yml
         with:
             env: ${{ matrix.env }}
             semver: ${{ inputs.semver }}

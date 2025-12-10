@@ -1,4 +1,4 @@
-name: deploy-i
+name: deploy-env
 
 on:
     workflow_call:
@@ -22,7 +22,7 @@ on:
                 default: "{}"
 
 jobs:
-    deploy:
+    deploy-env:
         name: deploy-${{ inputs.env }}
         # Only run if the deploy label exists for this environment
         if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
