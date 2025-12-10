@@ -12,6 +12,11 @@ on:
             docker_tag:
                 required: true
                 type: string
+            deploy_labels:
+                required: false
+                type: string
+                description: "JSON object with deploy labels from check-pr-labels-with-prefix"
+                default: "{}"
 
 jobs:
     deploy:
@@ -19,6 +24,8 @@ jobs:
         strategy:
             matrix:
                 env: [d, n, p]
+        # Check if deploy label exists for this environment
+        if: contains(fromJson(inputs.deploy_labels), format('deploy-{0}', matrix.env))
         steps:
             - name: Echo versioning outputs
               run: |

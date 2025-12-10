@@ -68,9 +68,10 @@ jobs:
     #     uses: ./.github/workflows/pre-commit.yml
 
     deploy:
-        needs: [zerv-versioning, check-pre-release-label]
+        needs: [zerv-versioning, check-pre-release-label, check-deploy-labels]
         uses: ./.github/workflows/deploy.yml
         with:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
             pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
+            deploy_labels: ${{ needs.check-deploy-labels.outputs.labels }}
