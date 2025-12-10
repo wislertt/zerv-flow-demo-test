@@ -145,8 +145,12 @@ jobs:
                     [.formats[], .templates[], .custom[]] |
                     from_entries')
 
-                  # Output the combined dictionary
-                  echo "version_outputs=$ALL_OUTPUTS" >> $GITHUB_OUTPUT
+                  # Output the combined dictionary using multiline format
+                  {
+                      echo "version_outputs<<EOF"
+                      echo "$ALL_OUTPUTS"
+                      echo "EOF"
+                  } >> $GITHUB_OUTPUT
 
             - name: Generate versions
               id: generate-versions
