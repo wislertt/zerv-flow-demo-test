@@ -2,12 +2,6 @@ name: semantic-release
 
 on:
     workflow_call:
-        inputs:
-            skip_validation:
-                description: "Skip tag validation"
-                required: false
-                type: boolean
-                default: false
         outputs:
             version:
                 description: "The determined version"
@@ -28,7 +22,7 @@ jobs:
     validate-tag-for-workflow-dispatch:
         name: validate-tag-for-workflow-dispatch
         runs-on: ubuntu-latest
-        if: github.event_name == 'workflow_dispatch' && inputs.skip_validation != true
+        if: github.event_name == 'workflow_dispatch'
         outputs:
             is_valid: ${{ steps.check-tag.outputs.is_valid }}
             tag_version: ${{ steps.check-tag.outputs.tag_version }}
@@ -72,7 +66,7 @@ jobs:
     semantic-release:
         name: semantic-release
         needs: validate-tag-for-workflow-dispatch
-        if: github.event_name != 'workflow_dispatch' || inputs.skip_validation == true || needs.validate-tag-for-workflow-dispatch.outputs.is_valid == 'true'
+        if: github.event_name != 'workflow_dispatch' || needs.validate-tag-for-workflow-dispatch.outputs.is_valid == 'true'
         runs-on: ubuntu-latest
         outputs:
             new_release_version: ${{ steps.determine-version.outputs.version }}
