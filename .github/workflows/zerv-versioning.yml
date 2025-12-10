@@ -31,7 +31,7 @@ on:
                 default: '{"semver": "semver", "pep440": "pep440"}'
             output_templates:
                 type: string
-                description: "JSON object mapping output names to zerv output templates"
+                description: "JSON object mapping output names to zerv output templates (without quotes)"
                 default: '{"docker_tag": "{{ semver_obj.docker }}"}'
             custom_outputs:
                 type: string
@@ -139,7 +139,7 @@ jobs:
                     --argjson custom "$CUSTOM_OUTPUTS" \
                     '[
                       ($formats | to_entries | map({key: .key, value: ("--output-format " + .value)})),
-                      ($templates | to_entries | map({key: .key, value: ("--output-template " + .value)})),
+                      ($templates | to_entries | map({key: .key, value: ("--output-template \"" + .value + "\"")})),
                       ($custom | to_entries | map({key: .key, value: .value}))
                     ] |
                     flatten |
