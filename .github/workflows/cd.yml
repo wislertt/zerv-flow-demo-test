@@ -58,6 +58,7 @@ jobs:
                       echo "published=${{ steps.release.outputs.new_release_published }}" >> $GITHUB_OUTPUT
                       echo "New release: ${{ steps.release.outputs.new_release_version }}"
                   fi
+
     zerv-versioning:
         needs: semantic-release
         uses: ./.github/workflows/zerv-versioning.yml
