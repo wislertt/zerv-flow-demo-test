@@ -1,4 +1,4 @@
-name: Check PR Label
+name: check-pr-label-and-branch
 
 on:
     workflow_call:
@@ -18,15 +18,15 @@ on:
                 description: "Required prefix for the branch name"
                 default: ""
         outputs:
-            has_label:
-                value: ${{ jobs.check-label.outputs.has_label }}
+            is_valid:
+                value: ${{ jobs.check-label.outputs.is_valid }}
 
 jobs:
     check-label:
         name: check-label
         runs-on: ubuntu-latest
         outputs:
-            has_label: ${{ steps.check.outputs.has_label }}
+            is_valid: ${{ steps.check.outputs.is_valid }}
         steps:
             - name: Check for label and branch prefix
               id: check
@@ -63,14 +63,18 @@ jobs:
 
                   # Both conditions must be true
                   if [ "$HAS_LABEL" = "true" ] && [ "$HAS_BRANCH_PREFIX" = "true" ]; then
-                    echo "has_label=true" >> $GITHUB_OUTPUT
+                    echo "is_valid=true" >> $GITHUB_OUTPUT
                     echo "✅ Both label '$TARGET_LABEL' and branch prefix '$BRANCH_PREFIX' found"
                   else
-                    echo "has_label=false" >> $GITHUB_OUTPUT
+                    echo "is_valid=false" >> $GITHUB_OUTPUT
                     if [ "$HAS_LABEL" != "true" ]; then
                       echo "❌ Label '$TARGET_LABEL' not found"
+                    else
+                      echo "✅ Label '$TARGET_LABEL' found"
                     fi
                     if [ "$HAS_BRANCH_PREFIX" != "true" ]; then
                       echo "❌ Branch prefix '$BRANCH_PREFIX' not found"
+                    else
+                      echo "✅ Branch prefix '$BRANCH_PREFIX' found"
                     fi
                   fi

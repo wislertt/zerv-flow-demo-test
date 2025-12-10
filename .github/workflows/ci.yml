@@ -7,9 +7,9 @@ on:
         types: [labeled, unlabeled, opened, synchronize, reopened]
 
 jobs:
-    check-pre-release-label:
-        name: check-pre-release-label
-        uses: ./.github/workflows/check-pr-label.yml
+    check-pre-release:
+        name: check-pre-release
+        uses: ./.github/workflows/check-pr-label-and-branch.yml
         with:
             # labels: ${{ toJSON(github.event.pull_request.labels) }}
             target_label: "pre-release"
@@ -23,18 +23,18 @@ jobs:
 
     zerv-versioning:
         name: zerv-versioning
-        needs: check-pre-release-label
+        needs: check-pre-release
         uses: ./.github/workflows/zerv-versioning.yml
         with:
-            schema: ${{ (needs.check-pre-release-label.outputs.has_label == 'true' && 'standard-base-prerelease-post') || '' }}
+            schema: ${{ (needs.check-pre-release.outputs.is_valid == 'true' && 'standard-base-prerelease-post') || '' }}
 
     tag-release:
         name: tag-release
-        needs: [zerv-versioning, check-pre-release-label]
+        needs: [zerv-versioning, check-pre-release]
         runs-on: ubuntu-latest
         permissions:
             contents: write
-        if: needs.check-pre-release-label.outputs.has_label == 'true'
+        if: needs.check-pre-release.outputs.is_valid == 'true'
         steps:
             - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
