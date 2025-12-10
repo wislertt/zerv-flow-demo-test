@@ -19,8 +19,8 @@ jobs:
         name: semantic-release
         runs-on: ubuntu-latest
         outputs:
-            new_release_version: ${{ steps.set-outputs.outputs.version }}
-            new_release_published: ${{ steps.set-outputs.outputs.published }}
+            new_release_version: ${{ steps.set-version.outputs.version }}
+            new_release_published: ${{ steps.set-version.outputs.published }}
         steps:
             - name: Checkout
               uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -47,13 +47,42 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Set outputs
-              id: set-outputs
+            - name: Check for existing tag and set version
+              id: set-version
               run: |
-                  echo "last_release_version=${{ steps.release.outputs.last_release_version }}"
-                  echo "version=${{ steps.release.outputs.new_release_version }}" >> $GITHUB_OUTPUT
-                  echo "published=${{ steps.release.outputs.new_release_published }}" >> $GITHUB_OUTPUT
-                  echo "New release: ${{ steps.release.outputs.new_release_version }}"
+                  # Set the published status
+                  PUBLISHED="${{ steps.release.outputs.new_release_published }}"
+                  echo "published=$PUBLISHED" >> $GITHUB_OUTPUT
+                  echo "last_release_version=${{ steps.release.outputs.last_release_version }}" >> $GITHUB_OUTPUT
+
+                  # Check if new release was published
+                  if [ "$PUBLISHED" == "false" ]; then
+                      # Get the current commit SHA
+                      CURRENT_SHA=$(git rev-parse HEAD)
+                      # Find the tag that points to this commit and starts with 'v'
+                      EXISTING_TAG=$(git tag --points-at $CURRENT_SHA | grep '^v' | head -1)
+                      if [ -n "$EXISTING_TAG" ]; then
+                          # Use the existing tag version (remove 'v' prefix)
+                          VERSION=${EXISTING_TAG#v}
+                          echo "version=$VERSION" >> $GITHUB_OUTPUT
+                          echo "Using existing tag: $EXISTING_TAG"
+                      else
+                          # No tag found, this is an error case
+                          echo "::error::No existing tag found on commit and no new release published"
+                          echo "::error::This commit must have a tag starting with 'v'"
+                          exit 1
+                      fi
+                  else
+                      # Use the new release version
+                      echo "version=${{ steps.release.outputs.new_release_version }}" >> $GITHUB_OUTPUT
+                      echo "New release: ${{ steps.release.outputs.new_release_version }}"
+                  fi
+
+            - name: Display outputs
+              run: |
+                  echo "Version: ${{ steps.set-version.outputs.version }}"
+                  echo "Published: ${{ steps.set-version.outputs.published }}"
+                  echo "Last Release Version: ${{ steps.set-version.outputs.last_release_version }}"
 
     # ====================================================
     # semantic-release:
@@ -105,8 +134,6 @@ jobs:
     zerv-versioning:
         needs: semantic-release
         uses: ./.github/workflows/zerv-versioning.yml
-        with:
-            overridden_tag_version: ${{ needs.semantic-release.outputs.new_release_version }}
 
     # ====================================================
     # Test and Lint
