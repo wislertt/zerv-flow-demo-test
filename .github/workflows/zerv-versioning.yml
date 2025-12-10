@@ -99,8 +99,10 @@ jobs:
 
                   SEMVER=$(echo $ZERV_RON | \
                     zerv version --source stdin --output-format semver)
+                  sleep 3
                   PEP440=$(echo $ZERV_RON | \
                     zerv version --source stdin --output-format pep440)
+                  sleep 3
                   DOCKER_TAG=$(echo $ZERV_RON | \
                     zerv version --source stdin --output-template "{{ semver_obj.docker }}")
 
