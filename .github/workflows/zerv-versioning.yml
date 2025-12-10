@@ -180,8 +180,13 @@ jobs:
                       VERSIONS_JSON=$(echo "$VERSIONS_JSON" | jq --arg key "$key" --arg value "$value" '. + {($key): $value}')
                   done < <(echo "$VERSION_OUTPUTS" | jq -r 'to_entries[] | @base64')
 
-                  # Output the final JSON
-                  echo "versions=$VERSIONS_JSON" >> $GITHUB_OUTPUT
+                  # Compact the JSON and output using heredoc format
+                  VERSIONS_JSON_COMPACT=$(echo "$VERSIONS_JSON" | jq -c .)
+                  {
+                      echo "versions<<EOF"
+                      echo "$VERSIONS_JSON_COMPACT"
+                      echo "EOF"
+                  } >> $GITHUB_OUTPUT
 
             - name: Display generated versions
               run: |
