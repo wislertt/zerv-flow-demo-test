@@ -1,0 +1,32 @@
+name: deploy-all-env
+
+on:
+    workflow_call:
+        inputs:
+            semver:
+                required: true
+                type: string
+            pep440:
+                required: true
+                type: string
+            docker_tag:
+                required: true
+                type: string
+            deploy_labels:
+                required: false
+                type: string
+                description: "JSON object with deploy labels from check-pr-labels-with-prefix"
+                default: "{}"
+
+jobs:
+    deploy:
+        strategy:
+            matrix:
+                env: [d, n, p]
+        uses: ./.github/workflows/deploy-env.yml
+        with:
+            env: ${{ matrix.env }}
+            semver: ${{ inputs.semver }}
+            pep440: ${{ inputs.pep440 }}
+            docker_tag: ${{ inputs.docker_tag }}
+            deploy_labels: ${{ inputs.deploy_labels }}

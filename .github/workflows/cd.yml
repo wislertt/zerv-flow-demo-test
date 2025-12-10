@@ -68,10 +68,11 @@ jobs:
         with:
             overridden_tag_version: ${{ needs.semantic-release.outputs.new_release_version }}
 
-    deploy:
+    deploy-all-env:
         needs: zerv-versioning
-        uses: ./.github/workflows/deploy.yml
+        uses: ./.github/workflows/deploy-all-env.yml
         with:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
             pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
+            deploy_labels: '{"deploy-d": true, "deploy-n": true, "deploy-p": true}'

@@ -1,0 +1,37 @@
+name: deploy-env
+
+on:
+    workflow_call:
+        inputs:
+            env:
+                required: true
+                type: string
+            semver:
+                required: true
+                type: string
+            pep440:
+                required: true
+                type: string
+            docker_tag:
+                required: true
+                type: string
+            deploy_labels:
+                required: false
+                type: string
+                description: "JSON object with deploy labels from check-pr-labels-with-prefix"
+                default: "{}"
+
+jobs:
+    deploy-env:
+        name: deploy-${{ inputs.env }}
+        # Only run if the deploy label exists for this environment
+        if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Echo deployment info
+              run: |
+                  echo "Deploying to environment: ${{ inputs.env }}"
+                  echo "Semver: ${{ inputs.semver }}"
+                  echo "PEP440: ${{ inputs.pep440 }}"
+                  echo "Docker Tag: ${{ inputs.docker_tag }}"
+                  echo "Deploy label found: deploy-${{ inputs.env }}"
