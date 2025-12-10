@@ -24,11 +24,10 @@ on:
 jobs:
     deploy:
         name: deploy-${{ inputs.env }}
-        # Only run if the deploy label exists for this environment
         if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
         runs-on: ubuntu-latest
         steps:
-            - name: Echo deployment info
+            - name: Dummy deploy environment
               run: |
                   echo "Deploying to environment: ${{ inputs.env }}"
                   echo "Semver: ${{ inputs.semver }}"
