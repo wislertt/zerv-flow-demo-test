@@ -4,6 +4,7 @@ on:
     push:
         branches:
             - main
+    workflow_dispatch:
 
 permissions:
     contents: write
@@ -26,22 +27,22 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: Check existing release
-              id: check-release
-              run: |
-                  CURRENT_SHA=$(git rev-parse HEAD)
-                  EXISTING_TAG=$(git tag --points-at $CURRENT_SHA | grep '^v' | head -1)
-                  if [ -n "$EXISTING_TAG" ]; then
-                      echo "existing_tag=$EXISTING_TAG" >> $GITHUB_OUTPUT
-                      echo "existing_version=${EXISTING_TAG#v}" >> $GITHUB_OUTPUT
-                      echo "has_existing=true" >> $GITHUB_OUTPUT
-                  else
-                      echo "has_existing=false" >> $GITHUB_OUTPUT
-                  fi
+            # - name: Check existing release
+            #   id: check-release
+            #   run: |
+            #       CURRENT_SHA=$(git rev-parse HEAD)
+            #       EXISTING_TAG=$(git tag --points-at $CURRENT_SHA | grep '^v' | head -1)
+            #       if [ -n "$EXISTING_TAG" ]; then
+            #           echo "existing_tag=$EXISTING_TAG" >> $GITHUB_OUTPUT
+            #           echo "existing_version=${EXISTING_TAG#v}" >> $GITHUB_OUTPUT
+            #           echo "has_existing=true" >> $GITHUB_OUTPUT
+            #       else
+            #           echo "has_existing=false" >> $GITHUB_OUTPUT
+            #       fi
 
             - id: release
               name: Release
-              if: steps.check-release.outputs.has_existing == 'false'
+              #   if: steps.check-release.outputs.has_existing == 'false'
               uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,15 +50,56 @@ jobs:
             - name: Set outputs
               id: set-outputs
               run: |
-                  if [ "${{ steps.check-release.outputs.has_existing }}" == "true" ]; then
-                      echo "version=${{ steps.check-release.outputs.existing_version }}" >> $GITHUB_OUTPUT
-                      echo "published=true" >> $GITHUB_OUTPUT
-                      echo "Using existing release: ${{ steps.check-release.outputs.existing_version }}"
-                  else
-                      echo "version=${{ steps.release.outputs.new_release_version }}" >> $GITHUB_OUTPUT
-                      echo "published=${{ steps.release.outputs.new_release_published }}" >> $GITHUB_OUTPUT
-                      echo "New release: ${{ steps.release.outputs.new_release_version }}"
-                  fi
+                  echo "version=${{ steps.release.outputs.new_release_version }}" >> $GITHUB_OUTPUT
+                  echo "published=${{ steps.release.outputs.new_release_published }}" >> $GITHUB_OUTPUT
+                  echo "New release: ${{ steps.release.outputs.new_release_version }}"
+
+    # ====================================================
+    # semantic-release:
+    #     name: semantic-release
+    #     runs-on: ubuntu-latest
+    #     outputs:
+    #         new_release_version: ${{ steps.set-outputs.outputs.version }}
+    #         new_release_published: ${{ steps.set-outputs.outputs.published }}
+    #     steps:
+    #         - name: Checkout
+    #           uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+    #           with:
+    #               fetch-depth: 0
+
+    #         - name: Check existing release
+    #           id: check-release
+    #           run: |
+    #               CURRENT_SHA=$(git rev-parse HEAD)
+    #               EXISTING_TAG=$(git tag --points-at $CURRENT_SHA | grep '^v' | head -1)
+    #               if [ -n "$EXISTING_TAG" ]; then
+    #                   echo "existing_tag=$EXISTING_TAG" >> $GITHUB_OUTPUT
+    #                   echo "existing_version=${EXISTING_TAG#v}" >> $GITHUB_OUTPUT
+    #                   echo "has_existing=true" >> $GITHUB_OUTPUT
+    #               else
+    #                   echo "has_existing=false" >> $GITHUB_OUTPUT
+    #               fi
+
+    #         - id: release
+    #           name: Release
+    #           if: steps.check-release.outputs.has_existing == 'false'
+    #           uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+    #           env:
+    #               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    #         - name: Set outputs
+    #           id: set-outputs
+    #           run: |
+    #               if [ "${{ steps.check-release.outputs.has_existing }}" == "true" ]; then
+    #                   echo "version=${{ steps.check-release.outputs.existing_version }}" >> $GITHUB_OUTPUT
+    #                   echo "published=true" >> $GITHUB_OUTPUT
+    #                   echo "Using existing release: ${{ steps.check-release.outputs.existing_version }}"
+    #               else
+    #                   echo "version=${{ steps.release.outputs.new_release_version }}" >> $GITHUB_OUTPUT
+    #                   echo "published=${{ steps.release.outputs.new_release_published }}" >> $GITHUB_OUTPUT
+    #                   echo "New release: ${{ steps.release.outputs.new_release_version }}"
+    #               fi
+    # ====================================================
 
     zerv-versioning:
         needs: semantic-release
