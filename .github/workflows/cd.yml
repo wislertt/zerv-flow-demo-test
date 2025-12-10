@@ -13,10 +13,59 @@ permissions:
 
 jobs:
     # ====================================================
+    # Tag Validation for workflow_dispatch
+    # ====================================================
+    validate-tag:
+        name: Validate tag for workflow_dispatch
+        runs-on: ubuntu-latest
+        if: github.event_name == 'workflow_dispatch'
+        outputs:
+            is_valid: ${{ steps.check-tag.outputs.is_valid }}
+            tag_version: ${{ steps.check-tag.outputs.tag_version }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+              with:
+                  fetch-depth: 0
+
+            - name: Check tag format
+              id: check-tag
+              run: |
+                  # Get the current ref
+                  REF="${{ github.ref }}"
+
+                  # Check if ref is a tag
+                  if [[ $REF == refs/tags/* ]]; then
+                      # Extract tag name from ref
+                      TAG_NAME=${REF#refs/tags/}
+                      echo "Checking tag: $TAG_NAME"
+
+                      # Validate tag format: vX.X.X where X is numeric
+                      if [[ $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                          echo "✓ Tag format is valid"
+                          echo "is_valid=true" >> $GITHUB_OUTPUT
+                          # Remove 'v' prefix for version
+                          VERSION=${TAG_NAME#v}
+                          echo "tag_version=$VERSION" >> $GITHUB_OUTPUT
+                      else
+                          echo "✗ Invalid tag format. Expected format: vX.X.X (e.g., v1.0.0)"
+                          echo "Found: $TAG_NAME"
+                          echo "is_valid=false" >> $GITHUB_OUTPUT
+                          echo "tag_version=" >> $GITHUB_OUTPUT
+                      fi
+                  else
+                      echo "Not a tag, running on branch: $REF"
+                      echo "is_valid=true" >> $GITHUB_OUTPUT
+                      echo "tag_version=" >> $GITHUB_OUTPUT
+                  fi
+
+    # ====================================================
     # Versioning and Release
     # ====================================================
     semantic-release:
         name: semantic-release
+        needs: validate-tag
+        if: github.event_name != 'workflow_dispatch' || needs.validate-tag.outputs.is_valid == 'true'
         runs-on: ubuntu-latest
         outputs:
             new_release_version: ${{ steps.determine-version.outputs.version }}
@@ -40,8 +89,13 @@ jobs:
                   PUBLISHED="${{ steps.release.outputs.new_release_published }}"
                   echo "published=$PUBLISHED" >> $GITHUB_OUTPUT
 
-                  # Check if new release was published
-                  if [ "$PUBLISHED" == "false" ]; then
+                  # Check if we have a validated tag from workflow_dispatch
+                  if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ needs.validate-tag.outputs.tag_version }}" ]; then
+                      # Use the validated tag version
+                      VERSION="${{ needs.validate-tag.outputs.tag_version }}"
+                      echo "version=$VERSION" >> $GITHUB_OUTPUT
+                      echo "Using validated workflow_dispatch tag: v$VERSION"
+                  elif [ "$PUBLISHED" == "false" ]; then
                       # Get the current commit SHA
                       CURRENT_SHA=$(git rev-parse HEAD)
                       # Find the tag that points to this commit and starts with 'v'
@@ -69,7 +123,7 @@ jobs:
                   echo "Published: ${{ steps.determine-version.outputs.published }}"
 
     zerv-versioning:
-        needs: semantic-release
+        needs: [validate-tag, semantic-release]
         uses: ./.github/workflows/zerv-versioning.yml
 
     # ====================================================
