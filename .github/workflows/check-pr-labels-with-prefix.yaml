@@ -1,4 +1,4 @@
-name: Filter Labels by Prefix
+name: check-pr-labels-with-prefix
 
 on:
     workflow_call:
