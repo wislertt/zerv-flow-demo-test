@@ -27,7 +27,7 @@ jobs:
         if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
         runs-on: ubuntu-latest
         steps:
-            - name: Dummy deploy environment
+            - name: Dummy deploy with environment
               run: |
                   echo "Deploying to environment: ${{ inputs.env }}"
                   echo "Semver: ${{ inputs.semver }}"
