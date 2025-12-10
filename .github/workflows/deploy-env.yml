@@ -22,7 +22,7 @@ on:
                 default: "{}"
 
 jobs:
-    deploy-env:
+    deploy:
         name: deploy-${{ inputs.env }}
         # Only run if the deploy label exists for this environment
         if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]

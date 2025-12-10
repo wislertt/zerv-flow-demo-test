@@ -76,3 +76,11 @@ jobs:
             pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
             deploy_labels: '{"deploy-d": true, "deploy-n": true, "deploy-p": true}'
+
+    deploy-no-env:
+        needs: zerv-versioning
+        uses: ./.github/workflows/deploy-no-env.yml
+        with:
+            semver: ${{ needs.zerv-versioning.outputs.semver }}
+            pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
+            docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
