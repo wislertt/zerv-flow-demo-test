@@ -15,6 +15,9 @@ on:
             published:
                 description: "Whether a new release was published"
                 value: ${{ jobs.semantic-release.outputs.new_release_published }}
+            is_valid_semantic_release:
+                description: "Whether semantic-release job was executed successfully (regardless of whether it published a release)"
+                value: ${{ jobs.semantic-release.result == 'success' }}
 
 permissions:
     contents: write
