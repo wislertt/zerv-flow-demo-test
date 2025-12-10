@@ -20,6 +20,10 @@ on:
         outputs:
             is_valid:
                 value: ${{ jobs.check-label.outputs.is_valid }}
+            has_label:
+                value: ${{ jobs.check-label.outputs.has_label }}
+            is_valid_branch:
+                value: ${{ jobs.check-label.outputs.is_valid_branch }}
 
 jobs:
     check-label:
@@ -27,6 +31,8 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             is_valid: ${{ steps.check.outputs.is_valid }}
+            has_label: ${{ steps.check.outputs.has_label }}
+            is_valid_branch: ${{ steps.check.outputs.is_valid_branch }}
         steps:
             - name: Check for label and branch prefix
               id: check
@@ -60,6 +66,10 @@ jobs:
                     '[.[] | select(.name == $target)] | length > 0')
 
                   echo "Has label: $HAS_LABEL"
+
+                  # Output individual condition results
+                  echo "has_label=$HAS_LABEL" >> $GITHUB_OUTPUT
+                  echo "is_valid_branch=$HAS_BRANCH_PREFIX" >> $GITHUB_OUTPUT
 
                   # Both conditions must be true
                   if [ "$HAS_LABEL" = "true" ] && [ "$HAS_BRANCH_PREFIX" = "true" ]; then

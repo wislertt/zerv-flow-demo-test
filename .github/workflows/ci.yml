@@ -67,3 +67,15 @@ jobs:
             pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
             deploy_labels: ${{ needs.check-deploy-labels.outputs.labels }}
+
+    deploy-no-env:
+        needs: [zerv-versioning, check-pre-release]
+        if: needs.check-pre-release.outputs.has_label == 'true'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Dummy deploy without environment
+              run: |
+                  echo "Deploying without specific environment"
+                  echo "Semver: ${{ needs.zerv-versioning.outputs.semver }}"
+                  echo "PEP440: ${{ needs.zerv-versioning.outputs.pep440 }}"
+                  echo "Docker Tag: ${{ needs.zerv-versioning.outputs.docker_tag }}"
