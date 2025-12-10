@@ -19,8 +19,8 @@ jobs:
         name: semantic-release
         runs-on: ubuntu-latest
         outputs:
-            new_release_version: ${{ steps.set-version.outputs.version }}
-            new_release_published: ${{ steps.set-version.outputs.published }}
+            new_release_version: ${{ steps.determine-version.outputs.version }}
+            new_release_published: ${{ steps.determine-version.outputs.published }}
         steps:
             - name: Checkout
               uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -47,8 +47,8 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Check for existing tag and set version
-              id: set-version
+            - name: Determine version from release or tag
+              id: determine-version
               run: |
                   # Set the published status
                   PUBLISHED="${{ steps.release.outputs.new_release_published }}"
@@ -80,9 +80,9 @@ jobs:
 
             - name: Display outputs
               run: |
-                  echo "Version: ${{ steps.set-version.outputs.version }}"
-                  echo "Published: ${{ steps.set-version.outputs.published }}"
-                  echo "Last Release Version: ${{ steps.set-version.outputs.last_release_version }}"
+                  echo "Version: ${{ steps.determine-version.outputs.version }}"
+                  echo "Published: ${{ steps.determine-version.outputs.published }}"
+                  echo "Last Release Version: ${{ steps.determine-version.outputs.last_release_version }}"
 
     # ====================================================
     # semantic-release:
