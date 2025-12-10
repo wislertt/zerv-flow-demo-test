@@ -33,7 +33,17 @@ module.exports = {
                 },
             },
         ],
-        "@semantic-release/changelog",
-        "@semantic-release/github",
+        [
+            "@semantic-release/changelog",
+            {
+                changelogFile: "docs/CHANGELOG.md",
+            },
+        ],
+        [
+            "@semantic-release/github",
+            {
+                assets: [{ path: "docs/CHANGELOG.md", label: "CHANGELOG.md" }],
+            },
+        ],
     ],
 }
