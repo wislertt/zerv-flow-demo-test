@@ -68,7 +68,7 @@ jobs:
     #     uses: ./.github/workflows/pre-commit.yml
 
     deploy-all-env:
-        needs: [zerv-versioning, check-pre-release-label, check-deploy-labels]
+        needs: [zerv-versioning, check-deploy-labels]
         uses: ./.github/workflows/deploy-all-env.yml
         with:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
