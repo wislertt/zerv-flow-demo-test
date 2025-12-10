@@ -17,7 +17,7 @@ jobs:
     # ====================================================
     semantic-release:
         name: semantic-release
-        uses: ./.github/workflows/release.yml
+        uses: ./.github/workflows/semantic-release.yml
 
     zerv-versioning:
         needs: semantic-release
