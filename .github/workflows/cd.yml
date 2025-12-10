@@ -50,6 +50,7 @@ jobs:
             - name: Set outputs
               id: set-outputs
               run: |
+                  echo "last_release_version=${{ steps.release.outputs.last_release_version }}"
                   echo "version=${{ steps.release.outputs.new_release_version }}" >> $GITHUB_OUTPUT
                   echo "published=${{ steps.release.outputs.new_release_published }}" >> $GITHUB_OUTPUT
                   echo "New release: ${{ steps.release.outputs.new_release_version }}"
