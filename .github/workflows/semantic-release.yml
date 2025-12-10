@@ -68,8 +68,8 @@ jobs:
 
     semantic-release:
         name: semantic-release
-        needs: validate-tag
-        if: github.event_name != 'workflow_dispatch' || inputs.skip_validation == true || needs.validate-tag.outputs.is_valid == 'true'
+        needs: validate-tag-for-workflow-dispatch
+        if: github.event_name != 'workflow_dispatch' || inputs.skip_validation == true || needs.validate-tag-for-workflow-dispatch.outputs.is_valid == 'true'
         runs-on: ubuntu-latest
         outputs:
             new_release_version: ${{ steps.determine-version.outputs.version }}
@@ -93,32 +93,27 @@ jobs:
                   PUBLISHED="${{ steps.release.outputs.new_release_published }}"
                   echo "published=$PUBLISHED" >> $GITHUB_OUTPUT
 
-                  # Check if we have a validated tag from workflow_dispatch
-                  if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ needs.validate-tag.outputs.tag_version }}" ]; then
-                    # Use the validated tag version
-                    VERSION="${{ needs.validate-tag.outputs.tag_version }}"
-                    echo "version=$VERSION" >> $GITHUB_OUTPUT
-                    echo "Using validated workflow_dispatch tag: v$VERSION"
-                  elif [ "$PUBLISHED" == "false" ]; then
-                    # Get the current commit SHA
-                    CURRENT_SHA=$(git rev-parse HEAD)
-                    # Find the tag that points to this commit and starts with 'v'
-                    EXISTING_TAG=$(git tag --points-at $CURRENT_SHA | grep '^v' | head -1)
-                    if [ -n "$EXISTING_TAG" ]; then
-                      # Use the existing tag version (remove 'v' prefix)
-                      VERSION=${EXISTING_TAG#v}
-                      echo "version=$VERSION" >> $GITHUB_OUTPUT
-                      echo "Using existing tag: $EXISTING_TAG"
-                    else
-                      # No tag found, this is an error case
-                      echo "::error::No existing tag found on commit and no new release published"
-                      echo "::error::This commit must have a tag starting with 'v'"
-                      exit 1
-                    fi
+                  # Check if new release was published
+                  if [ "$PUBLISHED" == "false" ]; then
+                      # Get the current commit SHA
+                      CURRENT_SHA=$(git rev-parse HEAD)
+                      # Find the tag that points to this commit and starts with 'v'
+                      EXISTING_TAG=$(git tag --points-at $CURRENT_SHA | grep '^v' | head -1)
+                      if [ -n "$EXISTING_TAG" ]; then
+                          # Use the existing tag version (remove 'v' prefix)
+                          VERSION=${EXISTING_TAG#v}
+                          echo "version=$VERSION" >> $GITHUB_OUTPUT
+                          echo "Using existing tag: $EXISTING_TAG"
+                      else
+                          # No tag found, this is an error case
+                          echo "::error::No existing tag found on commit and no new release published"
+                          echo "::error::This commit must have a tag starting with 'v'"
+                          exit 1
+                      fi
                   else
-                    # Use the new release version
-                    echo "version=${{ steps.release.outputs.new_release_version }}" >> $GITHUB_OUTPUT
-                    echo "New release: ${{ steps.release.outputs.new_release_version }}"
+                      # Use the new release version
+                      echo "version=${{ steps.release.outputs.new_release_version }}" >> $GITHUB_OUTPUT
+                      echo "New release: ${{ steps.release.outputs.new_release_version }}"
                   fi
 
             - name: Display outputs
