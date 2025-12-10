@@ -12,6 +12,11 @@ on:
                 required: true
                 type: string
                 description: "Target label to check for in the PR"
+            branch_prefix:
+                required: false
+                type: string
+                description: "Required prefix for the branch name"
+                default: ""
         outputs:
             has_label:
                 value: ${{ jobs.check-label.outputs.has_label }}
@@ -23,12 +28,31 @@ jobs:
         outputs:
             has_label: ${{ steps.check.outputs.has_label }}
         steps:
-            - name: Check for label
+            - name: Check for label and branch prefix
               id: check
               run: |
                   TARGET_LABEL="${{ inputs.target_label }}"
+                  BRANCH_PREFIX="${{ inputs.branch_prefix }}"
+                  CURRENT_BRANCH="${{ github.head_ref }}"
+
                   echo "Checking for label: $TARGET_LABEL"
+                  echo "Required branch prefix: $BRANCH_PREFIX"
+                  echo "Current branch: $CURRENT_BRANCH"
                   echo "Input labels: ${{ inputs.labels }}"
+
+                  # Check if branch has the required prefix
+                  if [ -n "$BRANCH_PREFIX" ]; then
+                    if [[ "$CURRENT_BRANCH" == "$BRANCH_PREFIX"* ]]; then
+                      echo "✅ Branch prefix matches"
+                      HAS_BRANCH_PREFIX=true
+                    else
+                      echo "❌ Branch prefix does not match"
+                      HAS_BRANCH_PREFIX=false
+                    fi
+                  else
+                    echo "ℹ️ No branch prefix requirement"
+                    HAS_BRANCH_PREFIX=true
+                  fi
 
                   # Use jq to check if the label exists in the labels array
                   HAS_LABEL=$(echo '${{ inputs.labels }}' | \
@@ -37,10 +61,16 @@ jobs:
 
                   echo "Has label: $HAS_LABEL"
 
-                  if [ "$HAS_LABEL" = "true" ]; then
+                  # Both conditions must be true
+                  if [ "$HAS_LABEL" = "true" ] && [ "$HAS_BRANCH_PREFIX" = "true" ]; then
                     echo "has_label=true" >> $GITHUB_OUTPUT
-                    echo "✅ Label '$TARGET_LABEL' found"
+                    echo "✅ Both label '$TARGET_LABEL' and branch prefix '$BRANCH_PREFIX' found"
                   else
                     echo "has_label=false" >> $GITHUB_OUTPUT
-                    echo "❌ Label '$TARGET_LABEL' not found"
+                    if [ "$HAS_LABEL" != "true" ]; then
+                      echo "❌ Label '$TARGET_LABEL' not found"
+                    fi
+                    if [ "$HAS_BRANCH_PREFIX" != "true" ]; then
+                      echo "❌ Branch prefix '$BRANCH_PREFIX' not found"
+                    fi
                   fi

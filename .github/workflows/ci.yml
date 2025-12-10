@@ -13,6 +13,7 @@ jobs:
         with:
             # labels: ${{ toJSON(github.event.pull_request.labels) }}
             target_label: "pre-release"
+            branch_prefix: "release/"
 
     check-deploy-labels:
         name: check-deploy-labels
@@ -33,7 +34,7 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: write
-        if: needs.check-pre-release-label.outputs.has_label == 'true' && startsWith(github.head_ref, 'release/')
+        if: needs.check-pre-release-label.outputs.has_label == 'true'
         steps:
             - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
