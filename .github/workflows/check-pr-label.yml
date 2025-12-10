@@ -7,6 +7,7 @@ on:
                 required: true
                 type: string
                 description: "JSON string of labels from the pull request"
+                default: ${{ toJSON(github.event.pull_request.labels) }}
             target_label:
                 required: true
                 type: string

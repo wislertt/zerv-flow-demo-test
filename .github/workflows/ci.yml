@@ -11,7 +11,7 @@ jobs:
         name: check-pre-release-label
         uses: ./.github/workflows/check-pr-label.yml
         with:
-            labels: ${{ toJSON(github.event.pull_request.labels) }}
+            # labels: ${{ toJSON(github.event.pull_request.labels) }}
             target_label: "pre-release"
 
     zerv-versioning:
