@@ -67,7 +67,7 @@ jobs:
     # pre-commit:
     #     uses: ./.github/workflows/pre-commit.yml
 
-    deploy:
+    deploy-all-env:
         needs: [zerv-versioning, check-pre-release-label, check-deploy-labels]
         uses: ./.github/workflows/deploy-all-env.yml
         with:

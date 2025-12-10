@@ -4,6 +4,12 @@ on:
     push:
 
 jobs:
+    check-deploy-labels:
+        name: check-deploy-labels
+        uses: ./.github/workflows/check-pr-labels-with-prefix.yaml
+        with:
+            prefix: "deploy-"
+
     zerv-versioning:
         name: zerv-versioning
         uses: ./.github/workflows/zerv-versioning.yml
@@ -11,10 +17,11 @@ jobs:
         #     # schema: standard-base-prerelease-post
         #     schema: ""
 
-    deploy:
-        needs: zerv-versioning
-        uses: ./.github/workflows/deploy.yml
+    deploy-all-env:
+        needs: [zerv-versioning, check-pre-release-label, check-deploy-labels]
+        uses: ./.github/workflows/deploy-all-env.yml
         with:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
             pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
+            deploy_labels: ${{ needs.check-deploy-labels.outputs.labels }}

@@ -19,7 +19,7 @@ on:
                 default: "{}"
 
 jobs:
-    deploy-all-env:
+    deploy:
         strategy:
             matrix:
                 env: [d, n, p]
