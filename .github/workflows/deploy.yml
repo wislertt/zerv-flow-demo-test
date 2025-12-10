@@ -24,8 +24,7 @@ jobs:
         strategy:
             matrix:
                 env: [d, n, p]
-        # Check if deploy label exists for this environment
-        if: contains(fromJson(inputs.deploy_labels), format('deploy-{0}', matrix.env))
+        if: fromJson(inputs.deploy_labels)[format('deploy-{0}', matrix.env)]
         steps:
             - name: Echo versioning outputs
               run: |
@@ -33,3 +32,4 @@ jobs:
                   echo "Semver: ${{ inputs.semver }}"
                   echo "PEP440: ${{ inputs.pep440 }}"
                   echo "Docker Tag: ${{ inputs.docker_tag }}"
+                  echo "Deploy labels: ${{ inputs.deploy_labels }}"
