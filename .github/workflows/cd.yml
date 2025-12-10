@@ -53,7 +53,6 @@ jobs:
                   # Set the published status
                   PUBLISHED="${{ steps.release.outputs.new_release_published }}"
                   echo "published=$PUBLISHED" >> $GITHUB_OUTPUT
-                  echo "last_release_version=${{ steps.release.outputs.last_release_version }}" >> $GITHUB_OUTPUT
 
                   # Check if new release was published
                   if [ "$PUBLISHED" == "false" ]; then
@@ -82,7 +81,6 @@ jobs:
               run: |
                   echo "Version: ${{ steps.determine-version.outputs.version }}"
                   echo "Published: ${{ steps.determine-version.outputs.published }}"
-                  echo "Last Release Version: ${{ steps.determine-version.outputs.last_release_version }}"
 
     # ====================================================
     # semantic-release:
