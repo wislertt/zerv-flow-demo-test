@@ -7,19 +7,15 @@ on:
         types: [labeled, unlabeled, opened, synchronize, reopened]
 
 jobs:
+    # ====================================================
+    # Versioning and Release
+    # ====================================================
     check-pre-release:
         name: check-pre-release
         uses: ./.github/workflows/check-pr-label-and-branch.yml
         with:
-            # labels: ${{ toJSON(github.event.pull_request.labels) }}
             target_label: "pre-release"
             branch_prefix: "release/"
-
-    check-deploy-labels:
-        name: check-deploy-labels
-        uses: ./.github/workflows/check-pr-labels-with-prefix.yaml
-        with:
-            prefix: "deploy-"
 
     zerv-versioning:
         name: zerv-versioning
@@ -50,6 +46,9 @@ jobs:
                   body: |
                       Pre-release from branch `${{ github.head_ref }}` (PR #${{ github.event.number }})
 
+    # ====================================================
+    # Test and Lint
+    # ====================================================
     # test:
     #     uses: ./.github/workflows/test.yml
     #     secrets:
@@ -59,18 +58,36 @@ jobs:
     # pre-commit:
     #     uses: ./.github/workflows/pre-commit.yml
 
+    # ====================================================
+    # Deployment with environment
+    # ====================================================
+    check-deploy-env-labels:
+        name: check-deploy-env-labels
+        uses: ./.github/workflows/check-pr-labels-with-prefix.yaml
+        with:
+            prefix: "deploy-"
+
     deploy-all-env:
-        needs: [zerv-versioning, check-deploy-labels]
+        needs: [zerv-versioning, check-deploy-env-labels]
         uses: ./.github/workflows/deploy-all-env.yml
         with:
             semver: ${{ needs.zerv-versioning.outputs.semver }}
             pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
-            deploy_labels: ${{ needs.check-deploy-labels.outputs.labels }}
+            deploy_labels: ${{ needs.check-deploy-env-labels.outputs.labels }}
+
+    # ====================================================
+    # Deployment without environment
+    # ====================================================
+    check-deploy-no-env-labels:
+        name: check-pre-release
+        uses: ./.github/workflows/check-pr-label-and-branch.yml
+        with:
+            target_label: "deploy"
 
     deploy-no-env:
-        needs: [zerv-versioning, check-pre-release]
-        if: needs.check-pre-release.outputs.has_label == 'true'
+        needs: [zerv-versioning, check-deploy-no-env-labels]
+        if: needs.check-deploy-no-env-labels.outputs.has_label == 'true'
         uses: ./.github/workflows/deploy-no-env.yml
         with:
             semver: ${{ needs.zerv-versioning.outputs.semver }}

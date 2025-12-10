@@ -11,6 +11,9 @@ permissions:
     pull-requests: write
 
 jobs:
+    # ====================================================
+    # Versioning and Release
+    # ====================================================
     semantic-release:
         name: semantic-release
         runs-on: ubuntu-latest
@@ -55,19 +58,24 @@ jobs:
                       echo "published=${{ steps.release.outputs.new_release_published }}" >> $GITHUB_OUTPUT
                       echo "New release: ${{ steps.release.outputs.new_release_version }}"
                   fi
-
-    # test:
-    #     uses: ./.github/workflows/test.yml
-    #     secrets:
-    #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    #         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
     zerv-versioning:
         needs: semantic-release
         uses: ./.github/workflows/zerv-versioning.yml
         with:
             overridden_tag_version: ${{ needs.semantic-release.outputs.new_release_version }}
 
+    # ====================================================
+    # Test and Lint
+    # ====================================================
+    # test:
+    #     uses: ./.github/workflows/test.yml
+    #     secrets:
+    #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    # ====================================================
+    # Deployment with environment
+    # ====================================================
     deploy-all-env:
         needs: zerv-versioning
         uses: ./.github/workflows/deploy-all-env.yml
@@ -77,6 +85,9 @@ jobs:
             docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
             deploy_labels: '{"deploy-d": true, "deploy-n": true, "deploy-p": true}'
 
+    # ====================================================
+    # Deployment without environment
+    # ====================================================
     deploy-no-env:
         needs: zerv-versioning
         uses: ./.github/workflows/deploy-no-env.yml
