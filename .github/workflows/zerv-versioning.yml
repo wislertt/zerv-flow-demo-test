@@ -169,8 +169,8 @@ jobs:
                   # Create JSON object to store versions
                   VERSIONS_JSON="{}"
 
-                  # Process all outputs in a single loop
-                  echo "$VERSION_OUTPUTS" | jq -r 'to_entries[] | @base64' | while read -r entry; do
+                  # Process all outputs and build the JSON
+                  while IFS= read -r entry; do
                       _jq() {
                           echo ${entry} | base64 --decode | jq -r ${1}
                       }
@@ -178,7 +178,7 @@ jobs:
                       args=$(_jq '.value')
                       value=$(echo "$ZERV_RON" | eval zerv version --source stdin $args)
                       VERSIONS_JSON=$(echo "$VERSIONS_JSON" | jq --arg key "$key" --arg value "$value" '. + {($key): $value}')
-                  done
+                  done < <(echo "$VERSION_OUTPUTS" | jq -r 'to_entries[] | @base64')
 
                   # Output the final JSON
                   echo "versions=$VERSIONS_JSON" >> $GITHUB_OUTPUT
