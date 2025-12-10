@@ -19,15 +19,15 @@ on:
                 default: ""
         outputs:
             is_valid:
-                value: ${{ jobs.check-label.outputs.is_valid }}
+                value: ${{ jobs.check-pr-label-and-branch.outputs.is_valid }}
             has_label:
-                value: ${{ jobs.check-label.outputs.has_label }}
+                value: ${{ jobs.check-pr-label-and-branch.outputs.has_label }}
             is_valid_branch:
-                value: ${{ jobs.check-label.outputs.is_valid_branch }}
+                value: ${{ jobs.check-pr-label-and-branch.outputs.is_valid_branch }}
 
 jobs:
-    check-label:
-        name: check-label
+    check-pr-label-and-branch:
+        name: check-pr-label-and-branch
         runs-on: ubuntu-latest
         outputs:
             is_valid: ${{ steps.check.outputs.is_valid }}
