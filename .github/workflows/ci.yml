@@ -37,8 +37,8 @@ jobs:
             - name: Create Release
               uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
               with:
-                  tag_name: "v${{ needs.zerv-versioning.outputs.semver }}"
-                  name: "v${{ needs.zerv-versioning.outputs.semver }}"
+                  tag_name: "v${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}"
+                  name: "v${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}"
                   target_commitish: ${{ github.head_ref }}
                   generate_release_notes: true
                   prerelease: true
@@ -71,9 +71,9 @@ jobs:
         needs: [zerv-versioning, check-deploy-env-labels]
         uses: ./.github/workflows/deploy-all-env.yml
         with:
-            semver: ${{ needs.zerv-versioning.outputs.semver }}
-            pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
-            docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
+            semver: ${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}
+            pep440: ${{ fromJson(needs.zerv-versioning.outputs.versions).pep440 }}
+            docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}
             deploy_labels: ${{ needs.check-deploy-env-labels.outputs.labels }}
 
     # ====================================================
@@ -90,6 +90,6 @@ jobs:
         if: needs.check-deploy-no-env-labels.outputs.has_label == 'true'
         uses: ./.github/workflows/deploy-no-env.yml
         with:
-            semver: ${{ needs.zerv-versioning.outputs.semver }}
-            pep440: ${{ needs.zerv-versioning.outputs.pep440 }}
-            docker_tag: ${{ needs.zerv-versioning.outputs.docker_tag }}
+            semver: ${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}
+            pep440: ${{ fromJson(needs.zerv-versioning.outputs.versions).pep440 }}
+            docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}
