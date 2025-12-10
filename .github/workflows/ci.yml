@@ -20,15 +20,6 @@ jobs:
         with:
             prefix: "deploy-"
 
-    debug-deploy-labels:
-        name: debug-deploy-labels
-        needs: check-deploy-labels
-        runs-on: ubuntu-latest
-        steps:
-            - name: Debug deploy labels
-              run: |
-                  echo "Deploy labels output: ${{ needs.check-deploy-labels.outputs.labels }}"
-
     zerv-versioning:
         name: zerv-versioning
         needs: check-pre-release-label
@@ -42,7 +33,7 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: write
-        if: needs.check-pre-release-label.outputs.has_label == 'true'
+        if: needs.check-pre-release-label.outputs.has_label == 'true' && startsWith(github.head_ref, 'release/')
         steps:
             - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
