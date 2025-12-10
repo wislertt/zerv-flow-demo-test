@@ -5,23 +5,24 @@ module.exports = {
             "@semantic-release/commit-analyzer",
             {
                 preset: "angular",
-                releaseRules: [
-                    // Pre-alpha configuration: all commit types trigger patch releases
-                    // TODO: Change feat to "minor" when project reaches stable state
-                    { type: "feat", release: "patch" },
-                    { type: "fix", release: "patch" },
-                    { type: "chore", release: "patch" },
-                    { type: "docs", release: "patch" },
-                    { type: "style", release: "patch" },
-                    { type: "refactor", release: "patch" },
-                    { type: "perf", release: "patch" },
-                    { type: "test", release: "patch" },
-                    { type: "build", release: "patch" },
-                    { type: "ci", release: "patch" },
-                ],
-            },
+                parserOpts: {
+                    noteKeywords: ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
+                }
+            }
         ],
-        "@semantic-release/release-notes-generator",
-        "@semantic-release/github",
+        [
+            "@semantic-release/release-notes-generator",
+            {
+                preset: "angular",
+                parserOpts: {
+                    noteKeywords: ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
+                },
+                writerOpts: {
+                    commitsSort: ["subject", "scope"]
+                }
+            }
+        ],
+        "@semantic-release/changelog",
+        "@semantic-release/github"
     ],
 }
