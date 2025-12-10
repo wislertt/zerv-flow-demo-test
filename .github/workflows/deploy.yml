@@ -24,12 +24,22 @@ jobs:
         strategy:
             matrix:
                 env: [d, n, p]
-        if: fromJson(inputs.deploy_labels)[format('deploy-{0}', matrix.env)]
         steps:
+            - name: Check deployment permission
+              id: check
+              run: |
+                  if echo '${{ inputs.deploy_labels }}' | jq -e '.["deploy-${{ matrix.env }}"]' > /dev/null 2>&1; then
+                    echo "should_deploy=true" >> $GITHUB_OUTPUT
+                    echo "✅ Deployment to ${{ matrix.env }} approved (deploy-${{ matrix.env }} label found)"
+                  else
+                    echo "should_deploy=false" >> $GITHUB_OUTPUT
+                    echo "⏭️ Skipping deployment to ${{ matrix.env }} (no deploy-${{ matrix.env }} label)"
+                  fi
+
             - name: Echo versioning outputs
+              if: steps.check.outputs.should_deploy == 'true'
               run: |
                   echo "Deploying at env: ${{ matrix.env }}"
                   echo "Semver: ${{ inputs.semver }}"
                   echo "PEP440: ${{ inputs.pep440 }}"
                   echo "Docker Tag: ${{ inputs.docker_tag }}"
-                  echo "Deploy labels: ${{ inputs.deploy_labels }}"
