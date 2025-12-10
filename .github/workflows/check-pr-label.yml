@@ -4,7 +4,8 @@ on:
     workflow_call:
         inputs:
             labels:
-                required: true
+                # required: true
+                required: false
                 type: string
                 description: "JSON string of labels from the pull request"
                 default: ${{ toJSON(github.event.pull_request.labels) }}
