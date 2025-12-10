@@ -22,29 +22,6 @@ module.exports = {
             },
         ],
         "@semantic-release/release-notes-generator",
-        // [
-        //     "@semantic-release/release-notes-generator",
-        //     {
-        //         preset: "angular",
-        //         parserOpts: {
-        //             noteKeywords: ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"],
-        //         },
-        //         writerOpts: {
-        //             commitsSort: ["subject", "scope"],
-        //         },
-        //     },
-        // ],
-        [
-            "@semantic-release/changelog",
-            {
-                changelogFile: "docs/CHANGELOG.md",
-            },
-        ],
-        [
-            "@semantic-release/github",
-            {
-                assets: [{ path: "docs/CHANGELOG.md", label: "CHANGELOG.md" }],
-            },
-        ],
+        "@semantic-release/github",
     ],
 }
