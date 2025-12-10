@@ -78,3 +78,7 @@ jobs:
                       echo "✅ Branch prefix '$BRANCH_PREFIX' found"
                     fi
                   fi
+
+            - name: Display Validation Result
+              run: |
+                  echo "Validation result: ${{ steps.check.outputs.is_valid }}"
