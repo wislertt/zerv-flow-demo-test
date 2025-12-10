@@ -79,15 +79,15 @@ jobs:
     # ====================================================
     # Deployment without environment
     # ====================================================
-    check-deploy-no-env-labels:
-        name: check-pre-release
+    check-deploy-no-env-label:
+        name: check-deploy-no-env-label
         uses: ./.github/workflows/check-pr-label-and-branch.yml
         with:
             target_label: "deploy"
 
     deploy-no-env:
-        needs: [zerv-versioning, check-deploy-no-env-labels]
-        if: needs.check-deploy-no-env-labels.outputs.has_label == 'true'
+        needs: [zerv-versioning, check-deploy-no-env-label]
+        if: needs.check-deploy-no-env-label.outputs.has_label == 'true'
         uses: ./.github/workflows/deploy-no-env.yml
         with:
             semver: ${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}

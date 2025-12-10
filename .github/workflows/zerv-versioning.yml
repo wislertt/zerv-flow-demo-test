@@ -137,13 +137,18 @@ jobs:
                     --argjson formats "$OUTPUT_FORMATS" \
                     --argjson templates "$OUTPUT_TEMPLATES" \
                     --argjson custom "$CUSTOM_OUTPUTS" \
-                    '{
-                      formats: $formats | to_entries | map({key: .key, args: ("--output-format " + .value)}),
-                      templates: $templates | to_entries | map({key: .key, args: ("--output-template " + .value)}),
-                      custom: $custom | to_entries | map({key: .key, args: .value})
-                    } |
-                    [.formats[], .templates[], .custom[]] |
-                    from_entries')
+                    '[
+                      ($formats | to_entries | map({key: .key, value: ("--output-format " + .value)})),
+                      ($templates | to_entries | map({key: .key, value: ("--output-template " + .value)})),
+                      ($custom | to_entries | map({key: .key, value: .value}))
+                    ] |
+                    flatten |
+                    map({(.key): .value}) |
+                    reduce .[] as $item ({}; . + $item)')
+
+                  # Debug: print the result
+                  echo "Generated version_outputs:"
+                  echo "$ALL_OUTPUTS"
 
                   # Output the combined dictionary using multiline format
                   {
