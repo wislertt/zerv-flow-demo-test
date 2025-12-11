@@ -81,16 +81,7 @@ jobs:
                       cargo-zerv-${{ runner.os }}-
 
             - name: Install zerv
-              run: |
-                  # Install zerv if not already installed
-                  if ! command -v zerv &> /dev/null; then
-                      echo "zerv not found, installing..."
-                      cargo install zerv
-                  else
-                      echo "zerv found, checking for updates..."
-                      cargo install cargo-update
-                      cargo install-update zerv
-                  fi
+              run: cargo install zerv || true
 
             - name: Debugging
               run: |
@@ -113,27 +104,35 @@ jobs:
                       SCHEMA_FLAG="--schema ${{ inputs.schema }}"
                   fi
 
-                  if [ -n "${{ inputs.branch_rules }}" ]; then
-                      # Escape quotes in the branch rules and store in variable
-                      BRANCH_RULES_ESCAPED=$(printf '%s\n' "${{ inputs.branch_rules }}" | sed 's/"/\\"/g')
-                      BRANCH_RULES_FLAG="--branch-rules \"$BRANCH_RULES_ESCAPED\""
+                  # Build command as array to handle complex arguments properly
+                  ZERV_ARGS=(
+                      "flow"
+                      "--bumped-branch" "$BRANCH_NAME"
+                      "--bumped-commit-hash" "g$COMMIT_HASH"
+                  )
+
+                  if [ -n "${{ inputs.overridden_tag_version }}" ]; then
+                      ZERV_ARGS+=("--tag-version" "${{ inputs.overridden_tag_version }}")
                   fi
 
-                  # Build the command
-                  ZERV_CMD="zerv flow \
-                      --bumped-branch \"$BRANCH_NAME\" \
-                      --bumped-commit-hash \"g$COMMIT_HASH\" \
-                      $OVERRIDDEN_TAG_VERSION_FLAG \
-                      $SCHEMA_FLAG \
-                      $BRANCH_RULES_FLAG \
-                      --output-format zerv"
+                  if [ -n "${{ inputs.schema }}" ]; then
+                      ZERV_ARGS+=("--schema" "${{ inputs.schema }}")
+                  fi
+
+                  if [ -n "${{ inputs.branch_rules }}" ]; then
+                      # Use printf to handle the multiline string with proper quoting
+                      BRANCH_RULES_DATA=$(printf '%s\n' "${{ inputs.branch_rules }}")
+                      ZERV_ARGS+=("--branch-rules" "$BRANCH_RULES_DATA")
+                  fi
+
+                  ZERV_ARGS+=("--output-format" "zerv")
 
                   # Debug: print the command
-                  echo "ZERV_CMD: $ZERV_CMD"
-                  echo "BRANCH_RULES_FLAG: ${BRANCH_RULES_FLAG:-<empty>}"
+                  echo "ZERV_CMD: zerv ${ZERV_ARGS[*]}"
+                  echo "BRANCH_RULES_DATA: ${BRANCH_RULES_DATA:-<empty>}"
 
                   # Execute the command
-                  ZERV_RON=$(eval "$ZERV_CMD")
+                  ZERV_RON=$(zerv "${ZERV_ARGS[@]}")
 
                   echo "zerv_ron<<EOF" >> $GITHUB_OUTPUT
                   echo "$ZERV_RON" >> $GITHUB_OUTPUT
