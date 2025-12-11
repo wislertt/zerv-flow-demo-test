@@ -8,7 +8,6 @@ permissions:
     contents: write
 
 jobs:
-    # Unlock all environments when PR is closed
     unlock-all-envs-when-closed:
         if: github.event.action == 'closed'
         strategy:
@@ -20,17 +19,14 @@ jobs:
             key_owner: ${{ github.ref }}
             fail_if_owner_mismatch: false
 
-    # Check deploy labels when unlabeled
     check-deploy-labels:
         if: github.event.action == 'unlabeled'
         uses: ./.github/workflows/check-pr-labels-with-prefix.yaml
         with:
             prefix: "deploy-"
 
-    # Unlock specific environments that no longer have deploy labels
     unlock-envs-when-no-labels:
         needs: check-deploy-labels
-        if: github.event.action == 'unlabeled'
         runs-on: ubuntu-latest
         outputs:
             missing_envs: ${{ steps.check-missing.outputs.missing_envs }}
@@ -39,35 +35,29 @@ jobs:
               id: check-missing
               run: |
                   LABELS='${{ needs.check-deploy-labels.outputs.labels }}'
+                  LABEL_PREFIX="deploy-"
+                  ALL_ENVS=("d" "n" "p")
+                  MISSING_ENVS=()
 
                   # Check which deploy labels are missing
-                  MISSING_ENVS=""
+                  for ENV in "${ALL_ENVS[@]}"; do
+                      if ! echo "$LABELS" | jq -e "has(\"${LABEL_PREFIX}${ENV}\")" > /dev/null 2>&1; then
+                          MISSING_ENVS+=("$ENV")
+                          echo "Missing ${LABEL_PREFIX}${ENV} label"
+                      fi
+                  done
 
-                  if ! echo "$LABELS" | jq -e 'has("deploy-d")' > /dev/null; then
-                    MISSING_ENVS="$MISSING_ENVS d"
-                    echo "Missing deploy-d label"
-                  fi
-
-                  if ! echo "$LABELS" | jq -e 'has("deploy-n")' > /dev/null; then
-                    MISSING_ENVS="$MISSING_ENVS n"
-                    echo "Missing deploy-n label"
-                  fi
-
-                  if ! echo "$LABELS" | jq -e 'has("deploy-p")' > /dev/null; then
-                    MISSING_ENVS="$MISSING_ENVS p"
-                    echo "Missing deploy-p label"
-                  fi
-
-                  # Convert to JSON array format
-                  ENV_ARRAY=$(echo "$MISSING_ENVS" | tr ' ' '\n' | grep -v '^$' | jq -R . | jq -s .)
+                  # Convert array to JSON array
+                  ENV_ARRAY=$(printf '%s\n' "${MISSING_ENVS[@]}" | jq -R . | jq -s .)
                   echo "Environments to unlock: $ENV_ARRAY"
+
+                  # Output as GitHub Actions variable
                   {
                       echo "missing_envs<<EOF"
                       echo "$ENV_ARRAY"
                       echo "EOF"
                   } >> $GITHUB_OUTPUT
 
-    # Actually unlock the missing environments
     unlock-missing-envs:
         needs: unlock-envs-when-no-labels
         if: needs.unlock-envs-when-no-labels.outputs.missing_envs != '[]'
