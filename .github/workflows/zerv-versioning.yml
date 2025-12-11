@@ -101,26 +101,29 @@ jobs:
                   fi
 
                   if [ -n "${{ inputs.branch_rules }}" ]; then
-                      BRANCH_RULES_FLAG="--branch-rules '${{ inputs.branch_rules }}'"
+                      # Write branch rules to a temporary file to preserve exact formatting
+                      echo '${{ inputs.branch_rules }}' > /tmp/branch_rules.txt
+                      BRANCH_RULES_FLAG="--branch-rules \"\$(cat /tmp/branch_rules.txt)\""
                   fi
 
-                  echo =======
-                  echo zerv flow \
-                      --bumped-branch "$BRANCH_NAME" \
-                      --bumped-commit-hash "g$COMMIT_HASH" \
+                  # Build the command
+                  ZERV_CMD="zerv flow \
+                      --bumped-branch \"$BRANCH_NAME\" \
+                      --bumped-commit-hash \"g$COMMIT_HASH\" \
                       $OVERRIDDEN_TAG_VERSION_FLAG \
                       $SCHEMA_FLAG \
                       $BRANCH_RULES_FLAG \
-                      --output-format zerv
-                  echo =======
+                      --output-format zerv"
 
-                  ZERV_RON=$(zerv flow \
-                      --bumped-branch "$BRANCH_NAME" \
-                      --bumped-commit-hash "g$COMMIT_HASH" \
-                      $OVERRIDDEN_TAG_VERSION_FLAG \
-                      $SCHEMA_FLAG \
-                      $BRANCH_RULES_FLAG \
-                      --output-format zerv)
+                  # Debug: print the command
+                  echo "ZERV_CMD: $ZERV_CMD"
+                  echo "BRANCH_RULES_FLAG: ${BRANCH_RULES_FLAG:-<empty>}"
+
+                  # Execute the command
+                  ZERV_RON=$(eval "$ZERV_CMD")
+
+                  # Clean up temporary file
+                  rm -f /tmp/branch_rules.txt
 
                   echo "zerv_ron<<EOF" >> $GITHUB_OUTPUT
                   echo "$ZERV_RON" >> $GITHUB_OUTPUT
