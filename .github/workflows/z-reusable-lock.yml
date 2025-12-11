@@ -27,9 +27,9 @@ jobs:
 
             - name: Check if locked by same owner
               id: check-owner
+              shell: bash
               run: |
-                  set -x
-
+                  # Sanitize and extract values
                   KEY="${{ inputs.key }}"
                   KEY_OWNER="${{ inputs.key_owner }}"
                   LOCK_REASON="${{ steps.check-lock.outputs.reason }}"
@@ -46,6 +46,10 @@ jobs:
 
                     echo "Lock owner: $LOCK_OWNER"
                     echo "Current owner: $KEY_OWNER"
+
+                    # Strip any surrounding quotes
+                    KEY_OWNER=$(echo "$KEY_OWNER" | sed 's/^"//;s/"$//')
+                    LOCK_OWNER=$(echo "$LOCK_OWNER" | sed 's/^"//;s/"$//')
 
                     if [ "$LOCK_OWNER" = "$KEY_OWNER" ]; then
                       echo "✓ Lock is already held by this owner"
