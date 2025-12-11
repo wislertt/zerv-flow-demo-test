@@ -70,5 +70,5 @@ jobs:
         uses: ./.github/workflows/unlock.yml
         with:
             key: ${{ matrix.env }}
-            key_owner: refs/pull/${{ github.event.number }}/head
+            key_owner: ${{ github.ref }}
             fail_if_owner_mismatch: false
