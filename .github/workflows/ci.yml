@@ -39,7 +39,7 @@ jobs:
               with:
                   tag_name: "v${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}"
                   name: "v${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}"
-                  target_commitish: ${{ github.head_ref }}
+                  target_commitish: ${{ github.event.pull_request.head.sha || github.sha }}
                   generate_release_notes: true
                   prerelease: true
                   append_body: false

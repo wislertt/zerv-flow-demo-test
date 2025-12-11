@@ -2,6 +2,12 @@ name: semantic-release
 
 on:
     workflow_call:
+        inputs:
+            allowed_workflow_dispatch_branches:
+                description: "Comma-separated list of branches allowed for workflow dispatch"
+                required: false
+                default: '["main"]'
+                type: string
         outputs:
             version:
                 description: "The determined version"
@@ -19,54 +25,81 @@ permissions:
     pull-requests: write
 
 jobs:
-    validate-tag-for-workflow-dispatch:
-        name: validate-tag-for-workflow-dispatch
+    validate-ref-for-workflow-dispatch:
+        name: validate-ref-for-workflow-dispatch
         runs-on: ubuntu-latest
         if: github.event_name == 'workflow_dispatch'
         outputs:
-            is_valid: ${{ steps.check-tag.outputs.is_valid }}
-            tag_version: ${{ steps.check-tag.outputs.tag_version }}
+            is_valid: ${{ steps.check-ref.outputs.is_valid }}
+            tag_version: ${{ steps.check-ref.outputs.tag_version }}
         steps:
             - name: Checkout
               uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
               with:
                   fetch-depth: 0
 
-            - name: Check tag format
-              id: check-tag
+            - name: Validate ref (tag or branch)
+              id: check-ref
               run: |
-                  # Get the current ref
+                  set -euo pipefail
+
+                  # Extract ref name without prefix
                   REF="${{ github.ref }}"
+                  REF_TYPE="${REF%%/*}"  # Get 'refs' part
+                  REF_SOURCE="${REF#*/}"  # Remove 'refs/'
+                  REF_KIND="${REF_SOURCE%%/*}"  # Get 'tags' or 'heads'
+                  REF_NAME="${REF_SOURCE#*/}"  # Get actual name
 
-                  # Check if ref is a tag
-                  if [[ $REF == refs/tags/* ]]; then
-                    # Extract tag name from ref
-                    TAG_NAME=${REF#refs/tags/}
-                    echo "Checking tag: $TAG_NAME"
+                  echo "Ref type: $REF_KIND"
+                  echo "Ref name: $REF_NAME"
 
-                    # Validate tag format: vX.X.X where X is numeric
-                    if [[ $TAG_NAME =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-                      echo "✓ Tag format is valid"
-                      echo "is_valid=true" >> $GITHUB_OUTPUT
-                      # Remove 'v' prefix for version
-                      VERSION=${TAG_NAME#v}
-                      echo "tag_version=$VERSION" >> $GITHUB_OUTPUT
-                    else
-                      echo "✗ Invalid tag format. Expected format: vX.X.X (e.g., v1.0.0)"
-                      echo "Found: $TAG_NAME"
-                      echo "is_valid=false" >> $GITHUB_OUTPUT
-                      echo "tag_version=" >> $GITHUB_OUTPUT
-                    fi
+                  # Initialize outputs
+                  IS_VALID=false
+                  TAG_VERSION=""
+
+                  if [[ "$REF_KIND" == "tags" ]]; then
+                      echo "Validating tag: $REF_NAME"
+
+                      # Check semver format: v1.2.3
+                      if [[ "$REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                          echo "✓ Valid semver tag"
+                          IS_VALID=true
+                          TAG_VERSION="${REF_NAME#v}"  # Remove 'v' prefix
+                      else
+                          echo "✗ Invalid tag format. Expected: v1.2.3"
+                      fi
+
+                  elif [[ "$REF_KIND" == "heads" ]]; then
+                      echo "Checking branch: $REF_NAME"
+
+                      # Parse allowed branches from JSON
+                      mapfile -t ALLOWED_BRANCHES < <(echo '${{ inputs.allowed_workflow_dispatch_branches }}' | jq -r '.[]')
+
+                      # Check if branch matches any allowed pattern
+                      for pattern in "${ALLOWED_BRANCHES[@]}"; do
+                          if [[ "$REF_NAME" == $pattern ]]; then
+                              echo "✓ Branch matches pattern: $pattern"
+                              IS_VALID=true
+                              break
+                          fi
+                      done
+
+                      if [[ "$IS_VALID" != "true" ]]; then
+                          echo "✗ Branch not in allowed list"
+                          echo "Allowed patterns: $(IFS=', '; echo "${ALLOWED_BRANCHES[*]}")"
+                      fi
                   else
-                    echo "Not a tag, running on branch: $REF"
-                    echo "is_valid=true" >> $GITHUB_OUTPUT
-                    echo "tag_version=" >> $GITHUB_OUTPUT
+                      echo "✗ Unknown ref type: $REF_KIND"
                   fi
+
+                  # Set outputs
+                  echo "is_valid=$IS_VALID" >> $GITHUB_OUTPUT
+                  echo "tag_version=$TAG_VERSION" >> $GITHUB_OUTPUT
 
     semantic-release:
         name: semantic-release
-        needs: validate-tag-for-workflow-dispatch
-        if: always() && (github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && needs.validate-tag-for-workflow-dispatch.outputs.is_valid == 'true'))
+        needs: validate-ref-for-workflow-dispatch
+        if: always() && (github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && needs.validate-ref-for-workflow-dispatch.outputs.is_valid == 'true'))
         runs-on: ubuntu-latest
         outputs:
             new_release_version: ${{ steps.determine-version.outputs.version }}
