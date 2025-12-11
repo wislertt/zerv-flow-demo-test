@@ -30,3 +30,10 @@ jobs:
         with:
             key: "d"
             key_owner: ${{ github.ref }}
+
+    unlock:
+        needs: lock
+        uses: ./.github/workflows/z-reusable-unlock.yml
+        with:
+            key: "d"
+            key_owner: ${{ github.ref }}
