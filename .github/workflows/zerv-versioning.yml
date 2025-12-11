@@ -104,35 +104,32 @@ jobs:
                       SCHEMA_FLAG="--schema ${{ inputs.schema }}"
                   fi
 
-                  # Build command as array to handle complex arguments properly
-                  ZERV_ARGS=(
-                      "flow"
-                      "--bumped-branch" "$BRANCH_NAME"
-                      "--bumped-commit-hash" "g$COMMIT_HASH"
-                  )
-
-                  if [ -n "${{ inputs.overridden_tag_version }}" ]; then
-                      ZERV_ARGS+=("--tag-version" "${{ inputs.overridden_tag_version }}")
-                  fi
-
-                  if [ -n "${{ inputs.schema }}" ]; then
-                      ZERV_ARGS+=("--schema" "${{ inputs.schema }}")
-                  fi
-
                   if [ -n "${{ inputs.branch_rules }}" ]; then
-                      # Use printf to handle the multiline string with proper quoting
-                      BRANCH_RULES_DATA=$(printf '%s\n' "${{ inputs.branch_rules }}")
-                      ZERV_ARGS+=("--branch-rules" "$BRANCH_RULES_DATA")
+                      # Write branch rules to a temporary file to preserve exact formatting
+                      echo '${{ inputs.branch_rules }}' > /tmp/branch_rules.txt
+                      BRANCH_RULES_FLAG="--branch-rules \"\$(cat /tmp/branch_rules.txt)\""
                   fi
 
-                  ZERV_ARGS+=("--output-format" "zerv")
+                  # Build the command
+                  ZERV_CMD="zerv flow \
+                      --bumped-branch \"$BRANCH_NAME\" \
+                      --bumped-commit-hash \"g$COMMIT_HASH\" \
+                      $OVERRIDDEN_TAG_VERSION_FLAG \
+                      $SCHEMA_FLAG \
+                      $BRANCH_RULES_FLAG \
+                      --output-format zerv"
 
                   # Debug: print the command
-                  echo "ZERV_CMD: zerv ${ZERV_ARGS[*]}"
-                  echo "BRANCH_RULES_DATA: ${BRANCH_RULES_DATA:-<empty>}"
+                  echo "ZERV_CMD: $ZERV_CMD"
+                  echo "BRANCH_RULES_FLAG: ${BRANCH_RULES_FLAG:-<empty>}"
+                  echo "branch_rules.txt content:"
+                  cat /tmp/branch_rules.txt || echo "File not found or empty"
 
                   # Execute the command
-                  ZERV_RON=$(zerv "${ZERV_ARGS[@]}")
+                  ZERV_RON=$(eval "$ZERV_CMD")
+
+                  # Clean up temporary file
+                  rm -f /tmp/branch_rules.txt
 
                   echo "zerv_ron<<EOF" >> $GITHUB_OUTPUT
                   echo "$ZERV_RON" >> $GITHUB_OUTPUT
