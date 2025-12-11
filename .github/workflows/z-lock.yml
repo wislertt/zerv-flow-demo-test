@@ -1,0 +1,24 @@
+name: lock-dispatch
+
+on:
+    push:
+
+permissions:
+    contents: write
+
+jobs:
+    lock:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: github/lock@vX.X.X
+              id: lock
+              with:
+                  mode: "lock"
+                  reason: "test"
+                  environment: "d"
+
+            - uses: github/lock@vX.X.X
+              id: lock
+              with:
+                  mode: "unlock"
+                  environment: "d"
