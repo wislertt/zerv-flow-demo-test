@@ -18,7 +18,7 @@ jobs:
                   environment: "d"
 
             - uses: github/lock@vX.X.X
-              id: lock
+              id: unlock
               with:
                   mode: "unlock"
                   environment: "d"
