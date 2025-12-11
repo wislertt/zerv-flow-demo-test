@@ -104,6 +104,16 @@ jobs:
                       BRANCH_RULES_FLAG="--branch-rules '${{ inputs.branch_rules }}'"
                   fi
 
+                  echo =======
+                  echo zerv flow \
+                      --bumped-branch "$BRANCH_NAME" \
+                      --bumped-commit-hash "g$COMMIT_HASH" \
+                      $OVERRIDDEN_TAG_VERSION_FLAG \
+                      $SCHEMA_FLAG \
+                      $BRANCH_RULES_FLAG \
+                      --output-format zerv
+                  echo =======
+
                   ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
                       --bumped-commit-hash "g$COMMIT_HASH" \
