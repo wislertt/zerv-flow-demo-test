@@ -25,11 +25,8 @@ permissions:
     pull-requests: write
 
 jobs:
-    # TODO: debug this
-    # Not a tag, running on branch: refs/heads/release/15/dev
-    # it should not valid in this case.
-    validate-tag-for-workflow-dispatch:
-        name: validate-tag-for-workflow-dispatch
+    validate-ref-for-workflow-dispatch:
+        name: validate-ref-for-workflow-dispatch
         runs-on: ubuntu-latest
         if: github.event_name == 'workflow_dispatch'
         outputs:
@@ -102,8 +99,8 @@ jobs:
 
     semantic-release:
         name: semantic-release
-        needs: validate-tag-for-workflow-dispatch
-        if: always() && (github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && needs.validate-tag-for-workflow-dispatch.outputs.is_valid == 'true'))
+        needs: validate-ref-for-workflow-dispatch
+        if: always() && (github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && needs.validate-ref-for-workflow-dispatch.outputs.is_valid == 'true'))
         runs-on: ubuntu-latest
         outputs:
             new_release_version: ${{ steps.determine-version.outputs.version }}
