@@ -1,4 +1,4 @@
-name: unlock-when-close
+name: pr-unlock
 
 on:
     pull_request:
@@ -8,7 +8,7 @@ permissions:
     contents: write
 
 jobs:
-    unlock-all-envs-when-closed:
+    unlock-all-on-close:
         if: github.event.action == 'closed'
         strategy:
             matrix:
@@ -25,7 +25,7 @@ jobs:
         with:
             prefix: "deploy-"
 
-    unlock-envs-when-no-labels:
+    get-missing-deploy-labels:
         needs: check-deploy-labels
         runs-on: ubuntu-latest
         outputs:
@@ -58,12 +58,12 @@ jobs:
                       echo "EOF"
                   } >> $GITHUB_OUTPUT
 
-    unlock-missing-envs:
-        needs: unlock-envs-when-no-labels
-        if: needs.unlock-envs-when-no-labels.outputs.missing_envs != '[]'
+    unlock-on-unlabel:
+        needs: get-missing-deploy-labels
+        if: needs.get-missing-deploy-labels.outputs.missing_envs != '[]'
         strategy:
             matrix:
-                env: ${{ fromJson(needs.unlock-envs-when-no-labels.outputs.missing_envs) }}
+                env: ${{ fromJson(needs.get-missing-deploy-labels.outputs.missing_envs) }}
         uses: ./.github/workflows/unlock.yml
         with:
             key: ${{ matrix.env }}
