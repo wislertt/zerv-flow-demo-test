@@ -24,6 +24,7 @@ jobs:
                   echo "Locked: ${{ steps.check-lock.outputs.locked }}"
                   echo "Lock holder: ${{ steps.check-lock.outputs.created_by }}"
                   echo "Lock branch: ${{ steps.check-lock.outputs.branch }}"
+                  echo "Headless: ${{ steps.check-lock.outputs.headless }}"
                   echo "Current ref: ${{ github.ref }}"
                   echo "Current PR number: ${{ github.event.number }}"
 
@@ -41,20 +42,47 @@ jobs:
 
                     echo ""
                     echo "=== Comparing Lock Ownership ==="
-                    echo "Lock branch: ${{ steps.check-lock.outputs.branch }}"
-                    echo "Current branch: $CURRENT_BRANCH"
-
-                    # Check if it's the same branch
                     LOCK_BRANCH="${{ steps.check-lock.outputs.branch }}"
+                    LOCK_HOLDER="${{ steps.check-lock.outputs.created_by }}"
+                    HEADLESS="${{ steps.check-lock.outputs.headless }}"
+                    CURRENT_ACTOR="${{ github.actor }}"
+
+                    echo "Lock branch: $LOCK_BRANCH"
+                    echo "Current branch: $CURRENT_BRANCH"
+                    echo "Lock holder: $LOCK_HOLDER"
+                    echo "Current actor: $CURRENT_ACTOR"
+                    echo "Headless mode: $HEADLESS"
+
+                    # Check conditions to allow proceeding
+                    ALLOW_PROCEED=false
+
+                    # Condition 1: Same branch (direct match)
                     if [ "$LOCK_BRANCH" = "$CURRENT_REF" ] || [ "$LOCK_BRANCH" = "$CURRENT_BRANCH" ]; then
-                      echo "✓ Lock is held by current branch/PR"
+                      echo "✓ Lock is held by current branch"
+                      ALLOW_PROCEED=true
+                    # Condition 2: Headless mode and same actor
+                    elif [ "$HEADLESS" = "true" ] && [ "$LOCK_HOLDER" = "$CURRENT_ACTOR" ]; then
+                      echo "✓ Lock is in headless mode and held by same user ($CURRENT_ACTOR)"
+                      ALLOW_PROCEED=true
+                    # Condition 3: Headless mode but different holders (should block)
+                    elif [ "$HEADLESS" = "true" ]; then
+                      echo "✗ Lock is in headless mode held by different user"
+                      echo "  Lock holder: $LOCK_HOLDER"
+                      echo "  Current user: $CURRENT_ACTOR"
+                    # Condition 4: Regular lock on different branch (should block)
+                    else
+                      echo "✗ Lock is held by different branch/PR"
+                    fi
+
+                    # Set outputs based on decision
+                    if [ "$ALLOW_PROCEED" = "true" ]; then
                       echo "same_branch=true" >> $GITHUB_OUTPUT
                       echo "should_proceed=true" >> $GITHUB_OUTPUT
                     else
-                      echo "✗ Lock is held by different branch/PR"
                       echo "same_branch=false" >> $GITHUB_OUTPUT
                       echo "should_proceed=false" >> $GITHUB_OUTPUT
-                      echo "::error::Environment 'd' is locked by ${{ steps.check-lock.outputs.created_by }} on branch ${{ steps.check-lock.outputs.branch }}"
+                      echo "::error::Environment 'd' is locked by $LOCK_HOLDER on $LOCK_BRANCH (headless: $HEADLESS)"
+                      echo "::error::Cannot proceed - lock is held by different user/branch"
                       exit 1
                     fi
                   else
