@@ -20,10 +20,28 @@ on:
                 type: string
                 description: "JSON object with deploy labels from check-pr-labels-with-prefix"
                 default: "{}"
+            lock_key:
+                description: "Key for environment lock"
+                required: true
+                type: string
+            lock_key_owner:
+                description: "Key owner for environment lock"
+                required: true
+                type: string
+            unlock_after_deploy:
+                required: true
+                type: boolean
 
 jobs:
+    lock:
+        uses: ./.github/workflows/lock.yml
+        with:
+            key: ${{ inputs.lock_key }}
+            key_owner: ${{ inputs.lock_key_owner }}
+
     deploy:
         name: deploy-${{ inputs.env }}
+        needs: lock
         if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
         runs-on: ubuntu-latest
         steps:
@@ -34,3 +52,11 @@ jobs:
                   echo "PEP440: ${{ inputs.pep440 }}"
                   echo "Docker Tag: ${{ inputs.docker_tag }}"
                   echo "Deploy label found: deploy-${{ inputs.env }}"
+
+    unlock:
+        uses: ./.github/workflows/unlock.yml
+        needs: deploy
+        if: inputs.unlock_after_deploy == true
+        with:
+            key: ${{ inputs.lock_key }}
+            key_owner: ${{ inputs.lock_key_owner }}
