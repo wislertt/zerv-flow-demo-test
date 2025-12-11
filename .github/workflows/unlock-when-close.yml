@@ -1,0 +1,19 @@
+name: unlock-when-close
+
+on:
+    pull_request:
+        types: [closed]
+
+permissions:
+    contents: write
+
+jobs:
+    unlock-all-envs:
+        strategy:
+            matrix:
+                env: [d, n, p]
+        uses: ./.github/workflows/unlock.yml
+        with:
+            key: ${{ matrix.env }}
+            key_owner: ${{ github.ref }}
+            fail_if_owner_mismatch: false

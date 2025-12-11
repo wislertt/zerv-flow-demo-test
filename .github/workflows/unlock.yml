@@ -11,6 +11,11 @@ on:
                 description: "Owner to validate against when unlocking (optional, unlocks for any if not provided)"
                 required: false
                 type: string
+            fail_if_owner_mismatch:
+                description: "Whether to fail the workflow if owner doesn't match (default: true)"
+                required: false
+                type: boolean
+                default: true
 
 permissions:
     contents: write
@@ -54,8 +59,13 @@ jobs:
                       else
                           echo "✗ Owner mismatch, cannot unlock"
                           echo "should_unlock=false" >> $GITHUB_OUTPUT
-                          echo "::error::Cannot unlock key '$KEY' - owned by $LOCK_OWNER, unlock requested by $UNLOCK_OWNER"
-                          exit 1
+
+                          if [ "${{ inputs.fail_if_owner_mismatch }}" = "true" ]; then
+                              echo "::error::Cannot unlock key '$KEY' - owned by $LOCK_OWNER, unlock requested by $UNLOCK_OWNER"
+                              exit 1
+                          else
+                              echo "::warning::Cannot unlock key '$KEY' - owned by $LOCK_OWNER, unlock requested by $UNLOCK_OWNER"
+                          fi
                       fi
                   fi
             - uses: github/lock@v3.0.1
