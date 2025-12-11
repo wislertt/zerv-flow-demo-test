@@ -48,7 +48,7 @@ jobs:
                   REF="${{ github.ref }}"
 
                   # Get allowed branches - parse JSON array
-                  ALLOWED_BRANCHES=$(echo "${{ inputs.allowed_workflow_dispatch_branches }}" | jq -r '.[]')
+                  ALLOWED_BRANCHES=$(echo ${{ inputs.allowed_workflow_dispatch_branches }} | jq -r '.[]')
 
                   # Check if ref is a tag
                   if [[ $REF == refs/tags/* ]]; then
