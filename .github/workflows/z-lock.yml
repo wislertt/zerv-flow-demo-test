@@ -10,14 +10,14 @@ jobs:
     lock:
         runs-on: ubuntu-latest
         steps:
-            - uses: github/lock@v0.1.6
+            - uses: github/lock@v3.0.1
               id: lock
               with:
                   mode: "lock"
                   reason: "test"
                   environment: "d"
 
-            - uses: github/lock@v0.1.6
+            - uses: github/lock@v3.0.1
               id: unlock
               with:
                   mode: "unlock"
