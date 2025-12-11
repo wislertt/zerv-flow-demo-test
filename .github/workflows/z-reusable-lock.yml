@@ -31,8 +31,10 @@ jobs:
                   echo "Key: ${{ inputs.key }}"
                   echo "Key owner: ${{ inputs.key_owner }}"
                   echo "Lock reason: ${{ steps.check-lock.outputs.reason }}"
+                  echo "Locked: ${{ steps.check-lock.outputs.locked }}"
 
                   if [ "${{ steps.check-lock.outputs.locked }}" = "true" ]; then
+                    echo "Lock exists, checking owner..."
                     # Extract owner from lock reason using simple regex
                     LOCK_REASON="${{ steps.check-lock.outputs.reason }}"
                     LOCK_OWNER=$(echo "$LOCK_REASON" | grep -o 'owner:[^,]*' | cut -d: -f2)
