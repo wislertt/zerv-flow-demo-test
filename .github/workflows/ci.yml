@@ -1,95 +1,95 @@
-name: ci
+# name: ci
 
-on:
-    # Rulesets for main branch
-    # - Require status checks to pass -> Require branches to be up to date before merging
-    pull_request:
-        types: [labeled, unlabeled, opened, synchronize, reopened]
+# on:
+#     # Rulesets for main branch
+#     # - Require status checks to pass -> Require branches to be up to date before merging
+#     pull_request:
+#         types: [labeled, unlabeled, opened, synchronize, reopened]
 
-jobs:
-    # ====================================================
-    # Versioning and Release
-    # ====================================================
-    check-pre-release:
-        name: check-pre-release
-        uses: ./.github/workflows/check-pr-label-and-branch.yml
-        with:
-            target_label: "pre-release"
-            branch_prefix: "release/"
+# jobs:
+#     # ====================================================
+#     # Versioning and Release
+#     # ====================================================
+#     check-pre-release:
+#         name: check-pre-release
+#         uses: ./.github/workflows/check-pr-label-and-branch.yml
+#         with:
+#             target_label: "pre-release"
+#             branch_prefix: "release/"
 
-    zerv-versioning:
-        name: zerv-versioning
-        needs: check-pre-release
-        uses: ./.github/workflows/zerv-versioning.yml
-        with:
-            schema: ${{ (needs.check-pre-release.outputs.is_valid == 'true' && 'standard-base-prerelease-post') || '' }}
+#     zerv-versioning:
+#         name: zerv-versioning
+#         needs: check-pre-release
+#         uses: ./.github/workflows/zerv-versioning.yml
+#         with:
+#             schema: ${{ (needs.check-pre-release.outputs.is_valid == 'true' && 'standard-base-prerelease-post') || '' }}
 
-    tag-release:
-        name: tag-release
-        needs: [zerv-versioning, check-pre-release]
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-        if: needs.check-pre-release.outputs.is_valid == 'true'
-        steps:
-            - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+#     tag-release:
+#         name: tag-release
+#         needs: [zerv-versioning, check-pre-release]
+#         runs-on: ubuntu-latest
+#         permissions:
+#             contents: write
+#         if: needs.check-pre-release.outputs.is_valid == 'true'
+#         steps:
+#             - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
-            - name: Create Release
-              uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
-              with:
-                  tag_name: "v${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}"
-                  name: "v${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}"
-                  target_commitish: ${{ github.event.pull_request.head.sha || github.sha }}
-                  generate_release_notes: true
-                  prerelease: true
-                  append_body: false
-                  body: |
-                      Pre-release from branch `${{ github.head_ref }}` (PR #${{ github.event.number }})
+#             - name: Create Release
+#               uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+#               with:
+#                   tag_name: "v${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}"
+#                   name: "v${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}"
+#                   target_commitish: ${{ github.event.pull_request.head.sha || github.sha }}
+#                   generate_release_notes: true
+#                   prerelease: true
+#                   append_body: false
+#                   body: |
+#                       Pre-release from branch `${{ github.head_ref }}` (PR #${{ github.event.number }})
 
-    # ====================================================
-    # Test and Lint
-    # ====================================================
-    # test:
-    #     uses: ./.github/workflows/test.yml
-    #     secrets:
-    #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    #         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+#     # ====================================================
+#     # Test and Lint
+#     # ====================================================
+#     # test:
+#     #     uses: ./.github/workflows/test.yml
+#     #     secrets:
+#     #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#     #         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-    # pre-commit:
-    #     uses: ./.github/workflows/pre-commit.yml
+#     # pre-commit:
+#     #     uses: ./.github/workflows/pre-commit.yml
 
-    # ====================================================
-    # Deployment with environment
-    # ====================================================
-    check-deploy-env-labels:
-        name: check-deploy-env-labels
-        uses: ./.github/workflows/check-pr-labels-with-prefix.yaml
-        with:
-            prefix: "deploy-"
+#     # ====================================================
+#     # Deployment with environment
+#     # ====================================================
+#     check-deploy-env-labels:
+#         name: check-deploy-env-labels
+#         uses: ./.github/workflows/check-pr-labels-with-prefix.yaml
+#         with:
+#             prefix: "deploy-"
 
-    deploy-all-env:
-        needs: [zerv-versioning, check-deploy-env-labels]
-        uses: ./.github/workflows/deploy-all-env.yml
-        with:
-            semver: ${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}
-            pep440: ${{ fromJson(needs.zerv-versioning.outputs.versions).pep440 }}
-            docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}
-            deploy_labels: ${{ needs.check-deploy-env-labels.outputs.labels }}
+#     deploy-all-env:
+#         needs: [zerv-versioning, check-deploy-env-labels]
+#         uses: ./.github/workflows/deploy-all-env.yml
+#         with:
+#             semver: ${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}
+#             pep440: ${{ fromJson(needs.zerv-versioning.outputs.versions).pep440 }}
+#             docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}
+#             deploy_labels: ${{ needs.check-deploy-env-labels.outputs.labels }}
 
-    # ====================================================
-    # Deployment without environment
-    # ====================================================
-    check-deploy-no-env-label:
-        name: check-deploy-no-env-label
-        uses: ./.github/workflows/check-pr-label-and-branch.yml
-        with:
-            target_label: "deploy"
+#     # ====================================================
+#     # Deployment without environment
+#     # ====================================================
+#     check-deploy-no-env-label:
+#         name: check-deploy-no-env-label
+#         uses: ./.github/workflows/check-pr-label-and-branch.yml
+#         with:
+#             target_label: "deploy"
 
-    deploy-no-env:
-        needs: [zerv-versioning, check-deploy-no-env-label]
-        if: needs.check-deploy-no-env-label.outputs.has_label == 'true'
-        uses: ./.github/workflows/deploy-no-env.yml
-        with:
-            semver: ${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}
-            pep440: ${{ fromJson(needs.zerv-versioning.outputs.versions).pep440 }}
-            docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}
+#     deploy-no-env:
+#         needs: [zerv-versioning, check-deploy-no-env-label]
+#         if: needs.check-deploy-no-env-label.outputs.has_label == 'true'
+#         uses: ./.github/workflows/deploy-no-env.yml
+#         with:
+#             semver: ${{ fromJson(needs.zerv-versioning.outputs.versions).semver }}
+#             pep440: ${{ fromJson(needs.zerv-versioning.outputs.versions).pep440 }}
+#             docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}

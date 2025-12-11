@@ -1,0 +1,13 @@
+name: z-lock-push
+
+on:
+    push:
+
+permissions:
+    contents: write
+
+jobs:
+    lock:
+        uses: ./.github/workflows/z-reusable-lock.yml
+        with:
+            key: "d"

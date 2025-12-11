@@ -1,8 +1,12 @@
-name: lock-dispatch
+name: Reusable Lock Workflow
 
 on:
-    pull_request:
-        types: [opened, synchronize, reopened]
+    workflow_call:
+        inputs:
+            key:
+                description: "Key to lock (e.g., dev, staging, prod)"
+                required: true
+                type: string
 
 permissions:
     contents: write
@@ -15,13 +19,13 @@ jobs:
               id: check-lock
               with:
                   mode: "check"
-                  environment: "d"
-                  # github_token: ${{ github.token }}
+                  environment: ${{ inputs.key }}
 
             - name: Check if locked by current PR
               id: check-pr
               run: |
                   echo "Current PR: ${{ github.event.number }}"
+                  echo "Key: ${{ inputs.key }}"
                   echo "Lock reason: ${{ steps.check-lock.outputs.reason }}"
 
                   if [ "${{ steps.check-lock.outputs.locked }}" = "true" ]; then
@@ -40,11 +44,11 @@ jobs:
                     else
                       echo "✗ Lock is held by different PR ($LOCK_PR)"
                       echo "should_proceed=false" >> $GITHUB_OUTPUT
-                      echo "::error::Environment 'd' is locked by PR $LOCK_PR"
+                      echo "::error::Key '${{ inputs.key }}' is locked by PR $LOCK_PR"
                       exit 1
                     fi
                   else
-                    echo "✓ Environment is not locked"
+                    echo "✓ Key is not locked"
                     echo "should_proceed=true" >> $GITHUB_OUTPUT
                   fi
 
@@ -63,7 +67,7 @@ jobs:
               id: lock
               with:
                   mode: "lock"
-                  environment: "d"
+                  environment: ${{ inputs.key }}
                   reason: ${{ steps.lock-reason.outputs.reason }}
               if: steps.check-pr.outputs.should_proceed == 'true'
 
@@ -71,6 +75,6 @@ jobs:
               if: always()
               run: |
                   echo "=== Lock Result ==="
-                  echo "Environment: d"
+                  echo "Key: ${{ inputs.key }}"
                   echo "Status: ${{ steps.lock.outcome }}"
                   echo "PR: ${{ github.event.number }}"

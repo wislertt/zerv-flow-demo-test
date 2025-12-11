@@ -1,0 +1,14 @@
+name: z-lock-pr
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+
+permissions:
+    contents: write
+
+jobs:
+    lock:
+        uses: ./.github/workflows/z-reusable-lock.yml
+        with:
+            key: "d"
