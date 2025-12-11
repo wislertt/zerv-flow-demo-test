@@ -34,6 +34,7 @@ on:
 
 jobs:
     lock:
+        name: lock-${{ inputs.lock_key }}
         if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
         uses: ./.github/workflows/lock.yml
         with:
@@ -54,6 +55,7 @@ jobs:
                   echo "Deploy label found: deploy-${{ inputs.env }}"
 
     unlock:
+        name: unlock-${{ inputs.lock_key }}
         uses: ./.github/workflows/unlock.yml
         needs: deploy
         if: inputs.unlock_after_deploy == true
