@@ -8,6 +8,7 @@ permissions:
     contents: write
 
 jobs:
+    # key owner = github.event.number
     debug:
         runs-on: ubuntu-latest
         steps:
@@ -24,7 +25,8 @@ jobs:
                   echo "github.base_ref: ${{ github.base_ref }}"
                   echo "github.head_ref: ${{ github.head_ref }}"
 
-    # lock:
-    #     uses: ./.github/workflows/z-reusable-lock.yml
-    #     with:
-    #         key: "d"
+    lock:
+        uses: ./.github/workflows/z-reusable-lock.yml
+        with:
+            key: "d"
+            key_owner: ${{ github.ref }}"

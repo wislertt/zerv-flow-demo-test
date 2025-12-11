@@ -7,6 +7,10 @@ on:
                 description: "Key to lock (e.g., dev, staging, prod)"
                 required: true
                 type: string
+            key_owner:
+                description: "Key owner identifier (e.g., PR number, SHA, run ID)"
+                required: true
+                type: string
 
 permissions:
     contents: write
@@ -21,30 +25,30 @@ jobs:
                   mode: "check"
                   environment: ${{ inputs.key }}
 
-            - name: Check if locked by current PR
-              id: check-pr
+            - name: Check if locked by same owner
+              id: check-owner
               run: |
-                  echo "Current PR: ${{ github.event.number }}"
                   echo "Key: ${{ inputs.key }}"
+                  echo "Key owner: ${{ inputs.key_owner }}"
                   echo "Lock reason: ${{ steps.check-lock.outputs.reason }}"
 
                   if [ "${{ steps.check-lock.outputs.locked }}" = "true" ]; then
-                    # Extract PR number from lock reason using simple regex
+                    # Extract owner from lock reason using simple regex
                     LOCK_REASON="${{ steps.check-lock.outputs.reason }}"
-                    LOCK_PR=$(echo "$LOCK_REASON" | grep -o 'pr:[^,]*' | cut -d: -f2)
-                    CURRENT_PR="${{ github.event.number }}"
+                    LOCK_OWNER=$(echo "$LOCK_REASON" | grep -o 'owner:[^,]*' | cut -d: -f2)
+                    CURRENT_OWNER="${{ inputs.key_owner }}"
 
-                    echo "Lock PR: $LOCK_PR"
-                    echo "Current PR: $CURRENT_PR"
+                    echo "Lock owner: $LOCK_OWNER"
+                    echo "Current owner: $CURRENT_OWNER"
 
-                    # Allow if same PR or no lock
-                    if [ "$LOCK_PR" = "$CURRENT_PR" ] || [ -z "$LOCK_PR" ]; then
-                      echo "✓ Lock is available (same PR or no PR lock)"
+                    # Allow if same owner or no owner in lock
+                    if [ "$LOCK_OWNER" = "$CURRENT_OWNER" ] || [ -z "$LOCK_OWNER" ]; then
+                      echo "✓ Lock is available (same owner or no owner lock)"
                       echo "should_proceed=true" >> $GITHUB_OUTPUT
                     else
-                      echo "✗ Lock is held by different PR ($LOCK_PR)"
+                      echo "✗ Lock is held by different owner ($LOCK_OWNER)"
                       echo "should_proceed=false" >> $GITHUB_OUTPUT
-                      echo "::error::Key '${{ inputs.key }}' is locked by PR $LOCK_PR"
+                      echo "::error::Key '${{ inputs.key }}' is locked by owner $LOCK_OWNER"
                       exit 1
                     fi
                   else
@@ -55,13 +59,12 @@ jobs:
             - name: Prepare lock reason
               id: lock-reason
               run: |
-                  # Simple reason with PR information
-                  CURRENT_PR="${{ github.event.number }}"
-                  REASON="pr:${CURRENT_PR}"
+                  # Simple reason with owner information
+                  REASON="owner:${{ inputs.key_owner }}"
 
                   echo "Lock reason: $REASON"
                   echo "reason=$REASON" >> $GITHUB_OUTPUT
-              if: steps.check-pr.outputs.should_proceed == 'true'
+              if: steps.check-owner.outputs.should_proceed == 'true'
 
             - uses: github/lock@v3.0.1
               id: lock
@@ -69,12 +72,12 @@ jobs:
                   mode: "lock"
                   environment: ${{ inputs.key }}
                   reason: ${{ steps.lock-reason.outputs.reason }}
-              if: steps.check-pr.outputs.should_proceed == 'true'
+              if: steps.check-owner.outputs.should_proceed == 'true'
 
             - name: Final lock status
               if: always()
               run: |
                   echo "=== Lock Result ==="
                   echo "Key: ${{ inputs.key }}"
+                  echo "Owner: ${{ inputs.key_owner }}"
                   echo "Status: ${{ steps.lock.outcome }}"
-                  echo "PR: ${{ github.event.number }}"
