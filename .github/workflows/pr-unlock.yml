@@ -11,12 +11,14 @@ jobs:
     unlock-all-on-close:
         if: github.event.action == 'closed'
         strategy:
+            fail-fast: false
             matrix:
                 env: [d, n, p]
         uses: ./.github/workflows/unlock.yml
         with:
             key: ${{ matrix.env }}
-            key_owner: ${{ github.ref }}
+            # key_owner: ${{ github.ref }}
+            key_owner: refs/pull/${{ github.event.number }}/merge
             fail_if_owner_mismatch: false
 
     check-deploy-labels:
@@ -62,6 +64,7 @@ jobs:
         needs: get-missing-deploy-labels
         if: needs.get-missing-deploy-labels.outputs.missing_envs != '[]'
         strategy:
+            fail-fast: false
             matrix:
                 env: ${{ fromJson(needs.get-missing-deploy-labels.outputs.missing_envs) }}
         uses: ./.github/workflows/unlock.yml
