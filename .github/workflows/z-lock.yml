@@ -24,6 +24,7 @@ jobs:
                   echo "Locked: ${{ steps.check-lock.outputs.locked }}"
                   echo "Lock holder: ${{ steps.check-lock.outputs.created_by }}"
                   echo "Lock branch: ${{ steps.check-lock.outputs.branch }}"
+                  echo "Lock reason: ${{ steps.check-lock.outputs.reason }}"
                   echo "Headless: ${{ steps.check-lock.outputs.headless }}"
                   echo "Current ref: ${{ github.ref }}"
                   echo "Current PR number: ${{ github.event.number }}"
@@ -38,19 +39,20 @@ jobs:
                     if [[ "$CURRENT_REF" == refs/pull/* ]]; then
                       CURRENT_PR="${{ github.event.number }}"
                       CURRENT_BRANCH="pr-$CURRENT_PR"
+                    else
+                      CURRENT_PR="${{ github.event.number }}"
                     fi
 
                     echo ""
                     echo "=== Comparing Lock Ownership ==="
                     LOCK_BRANCH="${{ steps.check-lock.outputs.branch }}"
-                    LOCK_HOLDER="${{ steps.check-lock.outputs.created_by }}"
+                    LOCK_REASON="${{ steps.check-lock.outputs.reason }}"
                     HEADLESS="${{ steps.check-lock.outputs.headless }}"
-                    CURRENT_ACTOR="${{ github.actor }}"
 
                     echo "Lock branch: $LOCK_BRANCH"
                     echo "Current branch: $CURRENT_BRANCH"
-                    echo "Lock holder: $LOCK_HOLDER"
-                    echo "Current actor: $CURRENT_ACTOR"
+                    echo "Lock reason: $LOCK_REASON"
+                    echo "Current PR: $CURRENT_PR"
                     echo "Headless mode: $HEADLESS"
 
                     # Check conditions to allow proceeding
@@ -60,18 +62,37 @@ jobs:
                     if [ "$LOCK_BRANCH" = "$CURRENT_REF" ] || [ "$LOCK_BRANCH" = "$CURRENT_BRANCH" ]; then
                       echo "✓ Lock is held by current branch"
                       ALLOW_PROCEED=true
-                    # Condition 2: Headless mode and same actor
-                    elif [ "$HEADLESS" = "true" ] && [ "$LOCK_HOLDER" = "$CURRENT_ACTOR" ]; then
-                      echo "✓ Lock is in headless mode and held by same user ($CURRENT_ACTOR)"
-                      ALLOW_PROCEED=true
-                    # Condition 3: Headless mode but different holders (should block)
-                    elif [ "$HEADLESS" = "true" ]; then
-                      echo "✗ Lock is in headless mode held by different user"
-                      echo "  Lock holder: $LOCK_HOLDER"
-                      echo "  Current user: $CURRENT_ACTOR"
-                    # Condition 4: Regular lock on different branch (should block)
-                    else
-                      echo "✗ Lock is held by different branch/PR"
+                    # Condition 2: Extract PR from JSON lock reason
+                    elif [ -n "$LOCK_REASON" ]; then
+                      # Try to parse JSON from reason
+                      if echo "$LOCK_REASON" | jq -e 'type == "object"' >/dev/null 2>&1; then
+                        # Parse JSON fields
+                        LOCK_PR=$(echo "$LOCK_REASON" | jq -r '.pr // empty')
+                        LOCK_REF=$(echo "$LOCK_REASON" | jq -r '.ref // empty')
+                        LOCK_ACTOR=$(echo "$LOCK_REASON" | jq -r '.actor // empty')
+                        LOCK_RUN_ID=$(echo "$LOCK_REASON" | jq -r '.run_id // empty')
+                        LOCK_TYPE=$(echo "$LOCK_REASON" | jq -r '.type // empty')
+
+                        echo "Parsed JSON lock info:"
+                        echo "  Type: $LOCK_TYPE"
+                        echo "  PR: $LOCK_PR"
+                        echo "  Ref: $LOCK_REF"
+                        echo "  Actor: $LOCK_ACTOR"
+                        echo "  Run ID: $LOCK_RUN_ID"
+
+                        # Check PR match
+                        if [ -n "$LOCK_PR" ] && [ "$LOCK_PR" = "$CURRENT_PR" ]; then
+                          echo "✓ Lock is held by same PR ($LOCK_PR)"
+                          ALLOW_PROCEED=true
+                        # Check ref/branch match
+                        elif [ -n "$LOCK_REF" ] && ([ "$LOCK_REF" = "$CURRENT_REF" ] || [ "${LOCK_REF#refs/heads/}" = "$CURRENT_BRANCH" ]); then
+                          echo "✓ Lock is held by same ref/branch"
+                          ALLOW_PROCEED=true
+                        fi
+                      else
+                        echo "Lock reason is not JSON format, treating as simple lock"
+                        echo "Reason: $LOCK_REASON"
+                      fi
                     fi
 
                     # Set outputs based on decision
@@ -81,8 +102,9 @@ jobs:
                     else
                       echo "same_branch=false" >> $GITHUB_OUTPUT
                       echo "should_proceed=false" >> $GITHUB_OUTPUT
-                      echo "::error::Environment 'd' is locked by $LOCK_HOLDER on $LOCK_BRANCH (headless: $HEADLESS)"
-                      echo "::error::Cannot proceed - lock is held by different user/branch"
+                      echo "::error::Environment 'd' is locked"
+                      echo "::error::Lock details: branch=$LOCK_BRANCH, reason=$LOCK_REASON, headless=$HEADLESS"
+                      echo "::error::Cannot proceed - lock is held by different PR/branch"
                       exit 1
                     fi
                   else
@@ -91,12 +113,60 @@ jobs:
                     echo "should_proceed=true" >> $GITHUB_OUTPUT
                   fi
 
+            - name: Prepare lock reason
+              id: lock-reason
+              run: |
+                # Build a JSON-structured reason with PR and ref information
+                CURRENT_PR="${{ github.event.number }}"
+                CURRENT_REF="${{ github.ref }}"
+                CURRENT_ACTOR="${{ github.actor }}"
+                CURRENT_RUN_ID="${{ github.run_id }}"
+                TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+                echo "=== Building Lock Reason ==="
+                echo "Current PR number: '$CURRENT_PR'"
+                echo "Current ref: '$CURRENT_REF'"
+                echo "Current actor: '$CURRENT_ACTOR'"
+                echo "Current run ID: '$CURRENT_RUN_ID'"
+                echo "Timestamp: '$TIMESTAMP'"
+
+                # Create JSON structure
+                REASON=$(jq -n \
+                  --arg type "deployment_lock" \
+                  --arg pr "$CURRENT_PR" \
+                  --arg ref "$CURRENT_REF" \
+                  --arg actor "$CURRENT_ACTOR" \
+                  --arg run_id "$CURRENT_RUN_ID" \
+                  --arg timestamp "$TIMESTAMP" \
+                  '{
+                    type: $type,
+                    pr: (if $pr != "" then $pr else null),
+                    ref: $ref,
+                    actor: $actor,
+                    run_id: $run_id,
+                    timestamp: $timestamp
+                  }')
+
+                # Convert to compact string for storage
+                REASON_STR=$(echo "$REASON" | jq -c .)
+
+                echo ""
+                echo "JSON structure:"
+                echo "$REASON"
+                echo ""
+                echo "Compact JSON string:"
+                echo "reason=$REASON_STR"
+                echo "reason=$REASON_STR" >> $GITHUB_OUTPUT
+                echo ""
+                echo "This will be used as: ${{ steps.lock-reason.outputs.reason }}"
+              if: steps.check-pr.outputs.should_proceed == 'true'
+
             - uses: github/lock@v3.0.1
               id: lock
               with:
                   mode: "lock"
                   environment: "d"
-                  reason: "test from ${{ github.ref }}"
+                  reason: ${{ steps.lock-reason.outputs.reason }}
               if: steps.check-pr.outputs.should_proceed == 'true'
 
             - name: Final lock status
