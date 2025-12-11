@@ -25,6 +25,9 @@ on:
                 required: true
                 type: boolean
 
+permissions:
+    contents: write
+
 jobs:
     deploy:
         strategy:
