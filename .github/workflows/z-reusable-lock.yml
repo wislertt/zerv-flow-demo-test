@@ -29,11 +29,14 @@ jobs:
               id: check-owner
               shell: bash
               run: |
-                  # Sanitize and extract values
+                  # Sanitize inputs by removing any trailing quotes or special chars
                   KEY="${{ inputs.key }}"
                   KEY_OWNER="${{ inputs.key_owner }}"
                   LOCK_REASON="${{ steps.check-lock.outputs.reason }}"
                   LOCKED="${{ steps.check-lock.outputs.locked }}"
+
+                  # Clean up the key_owner - remove any trailing quotes and unwanted chars
+                  # KEY_OWNER=$(echo "$KEY_OWNER" | sed 's/[^a-zA-Z0-9\/\-\_\.\:]//g')
 
                   echo "Key: $KEY"
                   echo "Key owner: $KEY_OWNER"
@@ -47,10 +50,6 @@ jobs:
                     echo "Lock owner: $LOCK_OWNER"
                     echo "Current owner: $KEY_OWNER"
 
-                    # Strip any surrounding quotes
-                    KEY_OWNER=$(echo "$KEY_OWNER" | sed 's/^"//;s/"$//')
-                    LOCK_OWNER=$(echo "$LOCK_OWNER" | sed 's/^"//;s/"$//')
-
                     if [ "$LOCK_OWNER" = "$KEY_OWNER" ]; then
                       echo "✓ Lock is already held by this owner"
                       echo "should_proceed=true" >> $GITHUB_OUTPUT
@@ -59,6 +58,7 @@ jobs:
                       echo "should_proceed=true" >> $GITHUB_OUTPUT
                     else
                       echo "✗ Lock is held by $LOCK_OWNER"
+                      echo "Current owner: $KEY_OWNER"
                       echo "should_proceed=false" >> $GITHUB_OUTPUT
                       echo "::error::Key '$KEY' is locked by $LOCK_OWNER"
                       exit 1

@@ -29,4 +29,4 @@ jobs:
         uses: ./.github/workflows/z-reusable-lock.yml
         with:
             key: "d"
-            key_owner: ${{ github.ref }}"
+            key_owner: ${{ github.ref }}
