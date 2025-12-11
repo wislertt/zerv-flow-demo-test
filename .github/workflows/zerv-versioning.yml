@@ -80,18 +80,9 @@ jobs:
                       cargo-zerv-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
                       cargo-zerv-${{ runner.os }}-
 
-            # - name: Install zerv
-            #   run: cargo install zerv || true
-
             - name: Install zerv
               run: |
-                  echo ===1
-                  cargo install zerv --version 0.7.83 || true
-                  echo ===2
                   cargo install zerv || true
-
-            - name: Debugging
-              run: |
                   zerv --version
 
             - name: Generate Zerv RON
