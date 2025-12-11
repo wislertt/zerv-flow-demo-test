@@ -17,7 +17,8 @@ jobs:
         uses: ./.github/workflows/unlock.yml
         with:
             key: ${{ matrix.env }}
-            key_owner: ${{ github.ref }}
+            # key_owner: ${{ github.ref }}
+            key_owner: refs/pull/${{ github.event.number }}/head
             fail_if_owner_mismatch: false
 
     check-deploy-labels:
@@ -69,5 +70,5 @@ jobs:
         uses: ./.github/workflows/unlock.yml
         with:
             key: ${{ matrix.env }}
-            key_owner: ${{ github.ref }}
+            key_owner: refs/pull/${{ github.event.number }}/head
             fail_if_owner_mismatch: false
