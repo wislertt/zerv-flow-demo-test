@@ -114,9 +114,9 @@ jobs:
                   fi
 
                   if [ -n "${{ inputs.branch_rules }}" ]; then
-                      # Use shell variable to store branch rules
-                      BRANCH_RULES='${{ inputs.branch_rules }}'
-                      BRANCH_RULES_FLAG="--branch-rules \"$BRANCH_RULES\""
+                      # Escape quotes in the branch rules and store in variable
+                      BRANCH_RULES_ESCAPED=$(printf '%s\n' "${{ inputs.branch_rules }}" | sed 's/"/\\"/g')
+                      BRANCH_RULES_FLAG="--branch-rules \"$BRANCH_RULES_ESCAPED\""
                   fi
 
                   # Build the command
