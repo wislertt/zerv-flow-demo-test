@@ -101,7 +101,7 @@ jobs:
                   fi
 
                   if [ -n "${{ inputs.branch_rules }}" ]; then
-                      BRANCH_RULES_FLAG="--branch-rules ${{ inputs.branch_rules }}"
+                      BRANCH_RULES_FLAG="--branch-rules '${{ inputs.branch_rules }}'"
                   fi
 
                   ZERV_RON=$(zerv flow \
