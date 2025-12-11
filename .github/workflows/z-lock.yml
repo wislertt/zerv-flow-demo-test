@@ -1,7 +1,8 @@
 name: lock-dispatch
 
 on:
-    push:
+    pull_request:
+        types: [opened, synchronize, reopened]
 
 permissions:
     contents: write
@@ -116,66 +117,66 @@ jobs:
             - name: Prepare lock reason
               id: lock-reason
               run: |
-                # Build a JSON-structured reason with PR and ref information
-                CURRENT_PR="${{ github.event.number }}"
-                CURRENT_REF="${{ github.ref }}"
-                CURRENT_ACTOR="${{ github.actor }}"
-                CURRENT_RUN_ID="${{ github.run_id }}"
-                TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                  # Build a JSON-structured reason with PR and ref information
+                  CURRENT_PR="${{ github.event.number }}"
+                  CURRENT_REF="${{ github.ref }}"
+                  CURRENT_ACTOR="${{ github.actor }}"
+                  CURRENT_RUN_ID="${{ github.run_id }}"
+                  TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-                echo "=== Building Lock Reason ==="
-                echo "Current PR number: '$CURRENT_PR'"
-                echo "Current ref: '$CURRENT_REF'"
-                echo "Current actor: '$CURRENT_ACTOR'"
-                echo "Current run ID: '$CURRENT_RUN_ID'"
-                echo "Timestamp: '$TIMESTAMP'"
+                  echo "=== Building Lock Reason ==="
+                  echo "Current PR number: '$CURRENT_PR'"
+                  echo "Current ref: '$CURRENT_REF'"
+                  echo "Current actor: '$CURRENT_ACTOR'"
+                  echo "Current run ID: '$CURRENT_RUN_ID'"
+                  echo "Timestamp: '$TIMESTAMP'"
 
-                # Create JSON structure
-                if [ -n "$CURRENT_PR" ]; then
-                  REASON=$(jq -n \
-                    --arg type "deployment_lock" \
-                    --arg pr "$CURRENT_PR" \
-                    --arg ref "$CURRENT_REF" \
-                    --arg actor "$CURRENT_ACTOR" \
-                    --arg run_id "$CURRENT_RUN_ID" \
-                    --arg timestamp "$TIMESTAMP" \
-                    '{
-                      type: $type,
-                      pr: $pr,
-                      ref: $ref,
-                      actor: $actor,
-                      run_id: $run_id,
-                      timestamp: $timestamp
-                    }')
-                else
-                  REASON=$(jq -n \
-                    --arg type "deployment_lock" \
-                    --arg ref "$CURRENT_REF" \
-                    --arg actor "$CURRENT_ACTOR" \
-                    --arg run_id "$CURRENT_RUN_ID" \
-                    --arg timestamp "$TIMESTAMP" \
-                    '{
-                      type: $type,
-                      pr: null,
-                      ref: $ref,
-                      actor: $actor,
-                      run_id: $run_id,
-                      timestamp: $timestamp
-                    }')
-                fi
+                  # Create JSON structure
+                  if [ -n "$CURRENT_PR" ]; then
+                    REASON=$(jq -n \
+                      --arg type "deployment_lock" \
+                      --arg pr "$CURRENT_PR" \
+                      --arg ref "$CURRENT_REF" \
+                      --arg actor "$CURRENT_ACTOR" \
+                      --arg run_id "$CURRENT_RUN_ID" \
+                      --arg timestamp "$TIMESTAMP" \
+                      '{
+                        type: $type,
+                        pr: $pr,
+                        ref: $ref,
+                        actor: $actor,
+                        run_id: $run_id,
+                        timestamp: $timestamp
+                      }')
+                  else
+                    REASON=$(jq -n \
+                      --arg type "deployment_lock" \
+                      --arg ref "$CURRENT_REF" \
+                      --arg actor "$CURRENT_ACTOR" \
+                      --arg run_id "$CURRENT_RUN_ID" \
+                      --arg timestamp "$TIMESTAMP" \
+                      '{
+                        type: $type,
+                        pr: null,
+                        ref: $ref,
+                        actor: $actor,
+                        run_id: $run_id,
+                        timestamp: $timestamp
+                      }')
+                  fi
 
-                # Convert to compact string for storage
-                REASON_STR=$(echo "$REASON" | jq -c .)
+                  # Convert to compact string for storage
+                  REASON_STR=$(echo "$REASON" | jq -c .)
 
-                echo ""
-                echo "JSON structure:"
-                echo "$REASON"
-                echo ""
-                echo "Compact JSON string:"
-                echo "reason=$REASON_STR"
-                echo "reason=$REASON_STR" >> $GITHUB_OUTPUT
-                echo ""
-                echo "This will be used as: ${{ steps.lock-reason.outputs.reason }}"
+                  echo ""
+                  echo "JSON structure:"
+                  echo "$REASON"
+                  echo ""
+                  echo "Compact JSON string:"
+                  echo "reason=$REASON_STR"
+                  echo "reason=$REASON_STR" >> $GITHUB_OUTPUT
+                  echo ""
+                  echo "This will be used as: ${{ steps.lock-reason.outputs.reason }}"
               if: steps.check-pr.outputs.should_proceed == 'true'
 
             - uses: github/lock@v3.0.1
