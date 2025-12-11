@@ -61,7 +61,11 @@ jobs:
                   # Convert to JSON array format
                   ENV_ARRAY=$(echo "$MISSING_ENVS" | tr ' ' '\n' | grep -v '^$' | jq -R . | jq -s .)
                   echo "Environments to unlock: $ENV_ARRAY"
-                  echo "missing_envs=$ENV_ARRAY" >> $GITHUB_OUTPUT
+                  {
+                      echo "missing_envs<<EOF"
+                      echo "$ENV_ARRAY"
+                      echo "EOF"
+                  } >> $GITHUB_OUTPUT
 
     # Actually unlock the missing environments
     unlock-missing-envs:
