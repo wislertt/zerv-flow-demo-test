@@ -18,7 +18,45 @@ jobs:
                   environment: "d"
 
             - uses: github/lock@v3.0.1
-              id: unlock
+              id: check-lock
               with:
-                  mode: "unlock"
+                  mode: "check"
                   environment: "d"
+                  github_token: ${{ github.token }}
+
+            - name: Check lock status
+              run: |
+                echo "=== Lock Information ==="
+                echo "Triggered: ${{ steps.check-lock.outputs.triggered }}"
+                echo "Type: ${{ steps.check-lock.outputs.type }}"
+                echo "Headless: ${{ steps.check-lock.outputs.headless }}"
+
+                echo ""
+                echo "=== Lock Status ==="
+                echo "Locked: ${{ steps.check-lock.outputs.locked }}"
+                echo "Branch: ${{ steps.check-lock.outputs.branch }}"
+                echo "Created by: ${{ steps.check-lock.outputs.created_by }}"
+                echo "Created at: ${{ steps.check-lock.outputs.created_at }}"
+                echo "Reason: ${{ steps.check-lock.outputs.reason }}"
+                echo "Link: ${{ steps.check-lock.outputs.link }}"
+
+                if [ -n "${{ steps.check-lock.outputs.comment_id }}" ]; then
+                    echo "Comment ID: ${{ steps.check-lock.outputs.comment_id }}"
+                fi
+
+                # GitHub context information
+                echo ""
+                echo "=== GitHub Context ==="
+                echo "Workflow: ${{ github.workflow }}"
+                echo "Repository: ${{ github.repository }}"
+                echo "Ref: ${{ github.ref }}"
+                echo "Sha: ${{ github.sha }}"
+                echo "Run ID: ${{ github.run_id }}"
+                echo "Run number: ${{ github.run_number }}"
+                echo "Actor: ${{ github.actor }}"
+
+            # - uses: github/lock@v3.0.1
+            #   id: unlock
+            #   with:
+            #       mode: "unlock"
+            #       environment: "d"
