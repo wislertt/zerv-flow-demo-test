@@ -81,7 +81,16 @@ jobs:
                       cargo-zerv-${{ runner.os }}-
 
             - name: Install zerv
-              run: cargo install zerv || true
+              run: |
+                  # Install zerv if not already installed
+                  if ! command -v zerv &> /dev/null; then
+                      echo "zerv not found, installing..."
+                      cargo install zerv
+                  else
+                      echo "zerv found, checking for updates..."
+                      cargo install cargo-update
+                      cargo install-update zerv
+                  fi
 
             - name: Debugging
               run: |
