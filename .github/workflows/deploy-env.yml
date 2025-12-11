@@ -34,6 +34,7 @@ on:
 
 jobs:
     lock:
+        if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
         uses: ./.github/workflows/lock.yml
         with:
             key: ${{ inputs.lock_key }}
@@ -42,7 +43,6 @@ jobs:
     deploy:
         name: deploy-${{ inputs.env }}
         needs: lock
-        if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
         runs-on: ubuntu-latest
         steps:
             - name: Dummy deploy with environment
