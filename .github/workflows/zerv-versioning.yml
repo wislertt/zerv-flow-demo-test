@@ -41,7 +41,7 @@ on:
             output_templates:
                 type: string
                 description: "JSON object mapping output names to zerv output templates (without quotes)"
-                default: '{"docker_tag": "{{ semver_obj.docker }}", "semver": "{{ semver }}"}'
+                default: '{"docker_tag": "{{ semver_obj.docker }}"}'
             custom_outputs:
                 type: string
                 description: "JSON object mapping output names to full zerv command arguments"
@@ -80,8 +80,15 @@ jobs:
                       cargo-zerv-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
                       cargo-zerv-${{ runner.os }}-
 
+            # - name: Install zerv
+            #   run: cargo install zerv || true
+
             - name: Install zerv
-              run: cargo install zerv || true
+              run: |
+                  echo ===1
+                  cargo install zerv --version 0.7.83 || true
+                  echo ===2
+                  cargo install zerv || true
 
             - name: Debugging
               run: |
