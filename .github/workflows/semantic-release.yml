@@ -19,6 +19,9 @@ permissions:
     pull-requests: write
 
 jobs:
+    # TODO: debug this
+    # Not a tag, running on branch: refs/heads/release/15/dev
+    # it should not valid in this case.
     validate-tag-for-workflow-dispatch:
         name: validate-tag-for-workflow-dispatch
         runs-on: ubuntu-latest

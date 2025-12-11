@@ -10,6 +10,9 @@ on:
                 description: "Zerv flow schema"
             branch_rules:
                 type: string
+                # Note: This default is the same as zerv flow's built-in default.
+                # If branch_rules input is "", zerv flow will use its internal default rules
+                # and produce the same results.
                 default: |
                     [
                         (
@@ -23,6 +26,12 @@ on:
                             pre_release_label: rc,
                             pre_release_num: None,
                             post_mode: tag
+                        ),
+                        (
+                            pattern: "*",
+                            pre_release_label: alpha,
+                            pre_release_num: None,
+                            post_mode: commit
                         )
                     ]
             output_formats:
@@ -91,15 +100,16 @@ jobs:
                       SCHEMA_FLAG="--schema ${{ inputs.schema }}"
                   fi
 
-                  # Prepare branch rules for shell (remove newlines and extra spaces)
-                  BRANCH_RULES=$(echo '${{ inputs.branch_rules }}' | tr -d '\n' | tr -s ' ')
+                  if [ -n "${{ inputs.branch_rules }}" ]; then
+                      BRANCH_RULES_FLAG="--branch-rules $(echo '${{ inputs.branch_rules }}' | tr -d '\n' | tr -s ' ')"
+                  fi
 
                   ZERV_RON=$(zerv flow \
                       --bumped-branch "$BRANCH_NAME" \
                       --bumped-commit-hash "g$COMMIT_HASH" \
                       $OVERRIDDEN_TAG_VERSION_FLAG \
                       $SCHEMA_FLAG \
-                      --branch-rules "$BRANCH_RULES" \
+                      $BRANCH_RULES_FLAG \
                       --output-format zerv)
 
                   echo "zerv_ron<<EOF" >> $GITHUB_OUTPUT
