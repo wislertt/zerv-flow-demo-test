@@ -18,6 +18,8 @@ jobs:
     semantic-release:
         name: semantic-release
         uses: ./.github/workflows/semantic-release.yml
+        with:
+            allowed_workflow_dispatch_branches: '["main"]'
 
     zerv-versioning:
         needs: semantic-release

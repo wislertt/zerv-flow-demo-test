@@ -2,6 +2,12 @@ name: semantic-release
 
 on:
     workflow_call:
+        inputs:
+            allowed_workflow_dispatch_branches:
+                description: "Comma-separated list of branches allowed for workflow dispatch"
+                required: false
+                default: '["main"]'
+                type: string
         outputs:
             version:
                 description: "The determined version"
@@ -35,11 +41,14 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: Check tag format
+            - name: Check tag format or branch permission
               id: check-tag
               run: |
                   # Get the current ref
                   REF="${{ github.ref }}"
+
+                  # Get allowed branches - parse JSON array
+                  ALLOWED_BRANCHES=$(echo "${{ inputs.allowed_workflow_dispatch_branches }}" | jq -r '.[]')
 
                   # Check if ref is a tag
                   if [[ $REF == refs/tags/* ]]; then
@@ -61,9 +70,34 @@ jobs:
                       echo "tag_version=" >> $GITHUB_OUTPUT
                     fi
                   else
-                    echo "Not a tag, running on branch: $REF"
-                    echo "is_valid=true" >> $GITHUB_OUTPUT
-                    echo "tag_version=" >> $GITHUB_OUTPUT
+                    # It's a branch ref
+                    BRANCH_NAME=${REF#refs/heads/}
+                    echo "Running on branch: $BRANCH_NAME"
+                    echo "Checking if branch is allowed..."
+
+                    # Check if branch is in allowed list
+                    BRANCH_ALLOWED=false
+                    for allowed_branch in $ALLOWED_BRANCHES; do
+                      # Remove any surrounding quotes
+                      allowed_branch=$(echo "$allowed_branch" | sed 's/^"//;s/"$//')
+
+                      # Support glob patterns
+                      if [[ "$BRANCH_NAME" == $allowed_branch ]]; then
+                        BRANCH_ALLOWED=true
+                        echo "✓ Branch '$BRANCH_NAME' matches pattern '$allowed_branch'"
+                        break
+                      fi
+                    done
+
+                    if [ "$BRANCH_ALLOWED" = true ]; then
+                      echo "is_valid=true" >> $GITHUB_OUTPUT
+                      echo "tag_version=" >> $GITHUB_OUTPUT
+                    else
+                      echo "✗ Branch '$BRANCH_NAME' is not in allowed branches list"
+                      echo "Allowed patterns: $(echo "$ALLOWED_BRANCHES" | tr '\n' ', ' | sed 's/,$//')"
+                      echo "is_valid=false" >> $GITHUB_OUTPUT
+                      echo "tag_version=" >> $GITHUB_OUTPUT
+                    fi
                   fi
 
     semantic-release:
