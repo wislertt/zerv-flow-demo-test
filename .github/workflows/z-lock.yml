@@ -10,24 +10,93 @@ jobs:
     lock:
         runs-on: ubuntu-latest
         steps:
-            - uses: suzuki-shunsuke/lock-action@latest
-              id: lock
-              with:
-                  mode: "lock"
-                  key: "d"
-
-            - uses: suzuki-shunsuke/lock-action@latest
+            - uses: github/lock@v3.0.1
               id: check-lock
               with:
                   mode: "check"
-                  key: "d"
+                  environment: "d"
+                  # github_token: ${{ github.token }}
 
-            - name: Check lock status
+            - name: Check if locked by current PR
+              id: check-pr
               run: |
-                  echo "=== Lock Information ==="
-                  echo "steps.lock.locked: ${{ steps.lock.locked }}"
-                  echo "steps.lock.outputs.already_locked: ${{ steps.lock.outputs.already_locked }}"
+                  echo "=== Lock Status ==="
+                  echo "Locked: ${{ steps.check-lock.outputs.locked }}"
+                  echo "Lock holder: ${{ steps.check-lock.outputs.created_by }}"
+                  echo "Lock branch: ${{ steps.check-lock.outputs.branch }}"
+                  echo "Current ref: ${{ github.ref }}"
+                  echo "Current PR number: ${{ github.event.number }}"
 
-                  echo "=== CheckLock Information ==="
-                  echo "steps.check-lock.locked: ${{ steps.check-lock.locked }}"
-                  echo "steps.check-lock.outputs.already_locked: ${{ steps.check-lock.outputs.already_locked }}"
+                  # Check if locked
+                  if [ "${{ steps.check-lock.outputs.locked }}" = "true" ]; then
+                    # Extract branch name from current ref
+                    CURRENT_REF="${{ github.ref }}"
+                    CURRENT_BRANCH="${CURRENT_REF#refs/heads/}"
+
+                    # Handle PR refs
+                    if [[ "$CURRENT_REF" == refs/pull/* ]]; then
+                      CURRENT_PR="${{ github.event.number }}"
+                      CURRENT_BRANCH="pr-$CURRENT_PR"
+                    fi
+
+                    echo ""
+                    echo "=== Comparing Lock Ownership ==="
+                    echo "Lock branch: ${{ steps.check-lock.outputs.branch }}"
+                    echo "Current branch: $CURRENT_BRANCH"
+
+                    # Check if it's the same branch
+                    LOCK_BRANCH="${{ steps.check-lock.outputs.branch }}"
+                    if [ "$LOCK_BRANCH" = "$CURRENT_REF" ] || [ "$LOCK_BRANCH" = "$CURRENT_BRANCH" ]; then
+                      echo "✓ Lock is held by current branch/PR"
+                      echo "same_branch=true" >> $GITHUB_OUTPUT
+                      echo "should_proceed=true" >> $GITHUB_OUTPUT
+                    else
+                      echo "✗ Lock is held by different branch/PR"
+                      echo "same_branch=false" >> $GITHUB_OUTPUT
+                      echo "should_proceed=false" >> $GITHUB_OUTPUT
+                      echo "::error::Environment 'd' is locked by ${{ steps.check-lock.outputs.created_by }} on branch ${{ steps.check-lock.outputs.branch }}"
+                      exit 1
+                    fi
+                  else
+                    echo "✓ Environment is not locked"
+                    echo "same_branch=false" >> $GITHUB_OUTPUT
+                    echo "should_proceed=true" >> $GITHUB_OUTPUT
+                  fi
+
+            - uses: github/lock@v3.0.1
+              id: lock
+              with:
+                  mode: "lock"
+                  environment: "d"
+                  reason: "test from ${{ github.ref }}"
+              if: steps.check-pr.outputs.should_proceed == 'true'
+
+            - name: Final lock status
+              if: always()
+              run: |
+                  echo "=== Final Lock Information ==="
+                  echo "Lock step status: ${{ steps.lock.outcome }}"
+                  echo "Lock conclusion: ${{ steps.lock.conclusion }}"
+
+                  if [ "${{ steps.check-pr.outputs.should_proceed }}" = "true" ]; then
+                    echo "✓ Proceeded with lock attempt"
+                    echo "Same branch lock: ${{ steps.check-pr.outputs.same_branch }}"
+                  else
+                    echo "✗ Did not attempt to lock (held by different PR/branch)"
+                  fi
+
+                  echo ""
+                  echo "=== Lock Details ==="
+                  echo "Environment: d"
+                  echo "Was locked: ${{ steps.check-lock.outputs.locked }}"
+                  echo "Created by: ${{ steps.check-lock.outputs.created_by }}"
+                  echo "Created at: ${{ steps.check-lock.outputs.created_at }}"
+                  echo "Lock link: ${{ steps.check-lock.outputs.link }}"
+
+                  echo ""
+                  echo "=== GitHub Context ==="
+                  echo "Workflow: ${{ github.workflow }}"
+                  echo "Repository: ${{ github.repository }}"
+                  echo "Ref: ${{ github.ref }}"
+                  echo "PR number: ${{ github.event.number }}"
+                  echo "Actor: ${{ github.actor }}"
