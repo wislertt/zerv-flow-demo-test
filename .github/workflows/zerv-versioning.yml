@@ -13,27 +13,28 @@ on:
                 # Note: This default is the same as zerv flow's built-in default.
                 # If branch_rules input is "", zerv flow will use its internal default rules
                 # and produce the same results.
-                default: |
-                    [
-                        (
-                            pattern: "develop",
-                            pre_release_label: beta,
-                            pre_release_num: Some(1),
-                            post_mode: commit
-                        ),
-                        (
-                            pattern: "release/*",
-                            pre_release_label: rc,
-                            pre_release_num: None,
-                            post_mode: tag
-                        ),
-                        (
-                            pattern: "*",
-                            pre_release_label: alpha,
-                            pre_release_num: None,
-                            post_mode: commit
-                        )
-                    ]
+                default: ""
+                # default: |
+                #     [
+                #         (
+                #             pattern: "develop",
+                #             pre_release_label: beta,
+                #             pre_release_num: Some(1),
+                #             post_mode: commit
+                #         ),
+                #         (
+                #             pattern: "release/*",
+                #             pre_release_label: rc,
+                #             pre_release_num: None,
+                #             post_mode: tag
+                #         ),
+                #         (
+                #             pattern: "*",
+                #             pre_release_label: alpha,
+                #             pre_release_num: None,
+                #             post_mode: commit
+                #         )
+                #     ]
             output_formats:
                 type: string
                 description: "JSON object mapping output names to zerv output formats"
@@ -121,8 +122,6 @@ jobs:
 
                   # Debug: print the command
                   echo "ZERV_CMD: $ZERV_CMD"
-                  echo "BRANCH_RULES_FLAG: ${BRANCH_RULES_FLAG:-<empty>}"
-                  echo "BRANCH_RULES_VAR content: ${BRANCH_RULES_VAR:-<empty>}"
 
                   # Execute the command
                   ZERV_RON=$(eval "$ZERV_CMD")
