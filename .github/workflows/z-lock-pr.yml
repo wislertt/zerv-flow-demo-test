@@ -36,4 +36,4 @@ jobs:
         uses: ./.github/workflows/z-reusable-unlock.yml
         with:
             key: "d"
-            # key_owner: ${{ github.ref }}
+            key_owner: ${{ github.ref }}
