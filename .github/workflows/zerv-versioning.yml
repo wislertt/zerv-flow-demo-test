@@ -107,7 +107,7 @@ jobs:
                   if [ -n "${{ inputs.branch_rules }}" ]; then
                       # Store branch rules in a variable
                       BRANCH_RULES_VAR='${{ inputs.branch_rules }}'
-                      BRANCH_RULES_FLAG="--branch-rules \"$BRANCH_RULES_VAR\""
+                      BRANCH_RULES_FLAG="--branch-rules '$BRANCH_RULES_VAR'"
                   fi
 
                   # Build the command
