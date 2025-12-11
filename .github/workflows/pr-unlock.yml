@@ -18,7 +18,7 @@ jobs:
         with:
             key: ${{ matrix.env }}
             # key_owner: ${{ github.ref }}
-            key_owner: refs/pull/${{ github.event.number }}/head
+            key_owner: refs/pull/${{ github.event.number }}/merge
             fail_if_owner_mismatch: false
 
     check-deploy-labels:
