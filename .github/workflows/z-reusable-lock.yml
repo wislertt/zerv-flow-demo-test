@@ -35,9 +35,6 @@ jobs:
                   LOCK_REASON="${{ steps.check-lock.outputs.reason }}"
                   LOCKED="${{ steps.check-lock.outputs.locked }}"
 
-                  # Clean up the key_owner - remove any trailing quotes and unwanted chars
-                  # KEY_OWNER=$(echo "$KEY_OWNER" | sed 's/[^a-zA-Z0-9\/\-\_\.\:]//g')
-
                   echo "Key: $KEY"
                   echo "Key owner: $KEY_OWNER"
                   echo "Lock reason: $LOCK_REASON"
