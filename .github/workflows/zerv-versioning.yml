@@ -83,6 +83,10 @@ jobs:
             - name: Install zerv
               run: cargo install zerv || true
 
+            - name: Debugging
+              run: |
+                  zerv --version
+
             - name: Generate Zerv RON
               id: zerv-ron
               # Support github.event_name == 'pull_request' or 'push'
