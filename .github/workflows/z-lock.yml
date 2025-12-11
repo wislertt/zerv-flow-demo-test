@@ -131,21 +131,38 @@ jobs:
                 echo "Timestamp: '$TIMESTAMP'"
 
                 # Create JSON structure
-                REASON=$(jq -n \
-                  --arg type "deployment_lock" \
-                  --arg pr "$CURRENT_PR" \
-                  --arg ref "$CURRENT_REF" \
-                  --arg actor "$CURRENT_ACTOR" \
-                  --arg run_id "$CURRENT_RUN_ID" \
-                  --arg timestamp "$TIMESTAMP" \
-                  '{
-                    type: $type,
-                    pr: (if $pr != "" then $pr else null),
-                    ref: $ref,
-                    actor: $actor,
-                    run_id: $run_id,
-                    timestamp: $timestamp
-                  }')
+                if [ -n "$CURRENT_PR" ]; then
+                  REASON=$(jq -n \
+                    --arg type "deployment_lock" \
+                    --arg pr "$CURRENT_PR" \
+                    --arg ref "$CURRENT_REF" \
+                    --arg actor "$CURRENT_ACTOR" \
+                    --arg run_id "$CURRENT_RUN_ID" \
+                    --arg timestamp "$TIMESTAMP" \
+                    '{
+                      type: $type,
+                      pr: $pr,
+                      ref: $ref,
+                      actor: $actor,
+                      run_id: $run_id,
+                      timestamp: $timestamp
+                    }')
+                else
+                  REASON=$(jq -n \
+                    --arg type "deployment_lock" \
+                    --arg ref "$CURRENT_REF" \
+                    --arg actor "$CURRENT_ACTOR" \
+                    --arg run_id "$CURRENT_RUN_ID" \
+                    --arg timestamp "$TIMESTAMP" \
+                    '{
+                      type: $type,
+                      pr: null,
+                      ref: $ref,
+                      actor: $actor,
+                      run_id: $run_id,
+                      timestamp: $timestamp
+                    }')
+                fi
 
                 # Convert to compact string for storage
                 REASON_STR=$(echo "$REASON" | jq -c .)
