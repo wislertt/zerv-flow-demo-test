@@ -65,7 +65,7 @@ jobs:
                       ALLOW_PROCEED=true
                     # Condition 2: Extract PR from JSON lock reason
                     elif [ -n "$LOCK_REASON" ]; then
-                      # Try to parse JSON from reason
+                      # Try to parse JSON from reason (with quote handling)
                       if echo "$LOCK_REASON" | jq -e 'type == "object"' >/dev/null 2>&1; then
                         # Parse JSON fields
                         LOCK_PR=$(echo "$LOCK_REASON" | jq -r '.pr // empty')
@@ -90,9 +90,54 @@ jobs:
                           echo "✓ Lock is held by same ref/branch"
                           ALLOW_PROCEED=true
                         fi
+                      # Try to parse JSON without quotes (github/lock strips quotes)
+                      elif echo "$LOCK_REASON" | sed 's/([a-zA-Z_][a-zA-Z0-9_]*):/"\1":/g' | sed 's/([a-zA-Z_][a-zA-Z0-9_]*):/"\1":/g' | jq -e 'type == "object"' >/dev/null 2>&1; then
+                        # Fix JSON by adding quotes and parse
+                        FIXED_JSON=$(echo "$LOCK_REASON" | sed 's/\([a-zA-Z_][a-zA-Z0-9_]*\):/"\1":/g; s/, /, /g' | sed 's/,$//')
+                        LOCK_PR=$(echo "$FIXED_JSON" | jq -r '.pr // empty')
+                        LOCK_REF=$(echo "$FIXED_JSON" | jq -r '.ref // empty')
+                        LOCK_ACTOR=$(echo "$FIXED_JSON" | jq -r '.actor // empty')
+                        LOCK_RUN_ID=$(echo "$FIXED_JSON" | jq -r '.run_id // empty')
+                        LOCK_TYPE=$(echo "$FIXED_JSON" | jq -r '.type // empty')
+
+                        echo "Parsed JSON lock info (fixed):"
+                        echo "  Type: $LOCK_TYPE"
+                        echo "  PR: $LOCK_PR"
+                        echo "  Ref: $LOCK_REF"
+                        echo "  Actor: $LOCK_ACTOR"
+                        echo "  Run ID: $LOCK_RUN_ID"
+
+                        # Check PR match
+                        if [ -n "$LOCK_PR" ] && [ "$LOCK_PR" = "$CURRENT_PR" ]; then
+                          echo "✓ Lock is held by same PR ($LOCK_PR)"
+                          ALLOW_PROCEED=true
+                        # Check ref/branch match
+                        elif [ -n "$LOCK_REF" ] && ([ "$LOCK_REF" = "$CURRENT_REF" ] || [ "${LOCK_REF#refs/heads/}" = "$CURRENT_BRANCH" ]); then
+                          echo "✓ Lock is held by same ref/branch"
+                          ALLOW_PROCEED=true
+                        fi
+                      # Fallback to regex parsing
                       else
-                        echo "Lock reason is not JSON format, treating as simple lock"
+                        echo "JSON parsing failed, using regex fallback"
                         echo "Reason: $LOCK_REASON"
+
+                        # Parse using regex
+                        LOCK_PR=$(echo "$LOCK_REASON" | grep -o 'pr:[^,]*' | cut -d: -f2 | tr -d '"')
+                        LOCK_REF=$(echo "$LOCK_REASON" | grep -o 'ref:[^,]*' | cut -d: -f2 | tr -d '"')
+
+                        echo "Parsed via regex:"
+                        echo "  PR: $LOCK_PR"
+                        echo "  Ref: $LOCK_REF"
+
+                        # Check PR match
+                        if [ -n "$LOCK_PR" ] && [ "$LOCK_PR" = "$CURRENT_PR" ]; then
+                          echo "✓ Lock is held by same PR ($LOCK_PR)"
+                          ALLOW_PROCEED=true
+                        # Check ref/branch match
+                        elif [ -n "$LOCK_REF" ] && ([ "$LOCK_REF" = "$CURRENT_REF" ] || [ "${LOCK_REF#refs/heads/}" = "$CURRENT_BRANCH" ]); then
+                          echo "✓ Lock is held by same ref/branch"
+                          ALLOW_PROCEED=true
+                        fi
                       fi
                     fi
 
