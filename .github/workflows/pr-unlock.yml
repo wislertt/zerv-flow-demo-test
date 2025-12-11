@@ -1,0 +1,71 @@
+name: pr-unlock
+
+on:
+    pull_request:
+        types: [closed, unlabeled]
+
+permissions:
+    contents: write
+
+jobs:
+    unlock-all-on-close:
+        if: github.event.action == 'closed'
+        strategy:
+            matrix:
+                env: [d, n, p]
+        uses: ./.github/workflows/unlock.yml
+        with:
+            key: ${{ matrix.env }}
+            key_owner: ${{ github.ref }}
+            fail_if_owner_mismatch: false
+
+    check-deploy-labels:
+        if: github.event.action == 'unlabeled'
+        uses: ./.github/workflows/check-pr-labels-with-prefix.yaml
+        with:
+            prefix: "deploy-"
+
+    get-missing-deploy-labels:
+        needs: check-deploy-labels
+        runs-on: ubuntu-latest
+        outputs:
+            missing_envs: ${{ steps.check-missing.outputs.missing_envs }}
+        steps:
+            - name: Check which environments to unlock
+              id: check-missing
+              run: |
+                  LABELS='${{ needs.check-deploy-labels.outputs.labels }}'
+                  LABEL_PREFIX="deploy-"
+                  ALL_ENVS=("d" "n" "p")
+                  MISSING_ENVS=()
+
+                  # Check which deploy labels are missing
+                  for ENV in "${ALL_ENVS[@]}"; do
+                      if ! echo "$LABELS" | jq -e "has(\"${LABEL_PREFIX}${ENV}\")" > /dev/null 2>&1; then
+                          MISSING_ENVS+=("$ENV")
+                          echo "Missing ${LABEL_PREFIX}${ENV} label"
+                      fi
+                  done
+
+                  # Convert array to JSON array
+                  ENV_ARRAY=$(printf '%s\n' "${MISSING_ENVS[@]}" | jq -R . | jq -s .)
+                  echo "Environments to unlock: $ENV_ARRAY"
+
+                  # Output as GitHub Actions variable
+                  {
+                      echo "missing_envs<<EOF"
+                      echo "$ENV_ARRAY"
+                      echo "EOF"
+                  } >> $GITHUB_OUTPUT
+
+    unlock-on-unlabel:
+        needs: get-missing-deploy-labels
+        if: needs.get-missing-deploy-labels.outputs.missing_envs != '[]'
+        strategy:
+            matrix:
+                env: ${{ fromJson(needs.get-missing-deploy-labels.outputs.missing_envs) }}
+        uses: ./.github/workflows/unlock.yml
+        with:
+            key: ${{ matrix.env }}
+            key_owner: ${{ github.ref }}
+            fail_if_owner_mismatch: false

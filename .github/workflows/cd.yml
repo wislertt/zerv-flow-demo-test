@@ -48,6 +48,8 @@ jobs:
             pep440: ${{ fromJson(needs.zerv-versioning.outputs.versions).pep440 }}
             docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}
             deploy_labels: '{"deploy-d": true, "deploy-n": true, "deploy-p": true}'
+            lock_key_owner: ${{ github.ref }}-${{ github.sha }}-${{ github.run_id }}
+            unlock_after_deploy: true
 
     # ====================================================
     # Deployment without environment
