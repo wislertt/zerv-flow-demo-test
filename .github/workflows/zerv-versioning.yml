@@ -114,9 +114,9 @@ jobs:
                   fi
 
                   if [ -n "${{ inputs.branch_rules }}" ]; then
-                      # Write branch rules to a temporary file to preserve exact formatting
-                      echo '${{ inputs.branch_rules }}' > /tmp/branch_rules.txt
-                      BRANCH_RULES_FLAG="--branch-rules \"\$(cat /tmp/branch_rules.txt)\""
+                      # Use shell variable to store branch rules
+                      BRANCH_RULES='${{ inputs.branch_rules }}'
+                      BRANCH_RULES_FLAG="--branch-rules \"$BRANCH_RULES\""
                   fi
 
                   # Build the command
@@ -134,9 +134,6 @@ jobs:
 
                   # Execute the command
                   ZERV_RON=$(eval "$ZERV_CMD")
-
-                  # Clean up temporary file
-                  rm -f /tmp/branch_rules.txt
 
                   echo "zerv_ron<<EOF" >> $GITHUB_OUTPUT
                   echo "$ZERV_RON" >> $GITHUB_OUTPUT
