@@ -40,6 +40,7 @@ jobs:
         with:
             key: ${{ inputs.lock_key }}
             key_owner: ${{ inputs.lock_key_owner }}
+            job_name: unlock-${{ inputs.lock_key }}
 
     deploy:
         name: deploy-${{ inputs.env }}
@@ -62,3 +63,4 @@ jobs:
         with:
             key: ${{ inputs.lock_key }}
             key_owner: ${{ inputs.lock_key_owner }}
+            job_name: unlock-${{ inputs.lock_key }}

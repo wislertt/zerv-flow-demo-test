@@ -31,6 +31,7 @@ jobs:
             key: ${{ matrix.env }}
             key_owner: refs/pull/${{ github.event.number }}/merge
             fail_if_owner_mismatch: false
+            job_name: unlock-${{ matrix.env }}
 
     check-deploy-labels:
         if: github.event.action == 'unlabeled'
@@ -82,3 +83,4 @@ jobs:
             key: ${{ matrix.env }}
             key_owner: ${{ github.ref }}
             fail_if_owner_mismatch: false
+            job_name: unlock-${{ matrix.env }}

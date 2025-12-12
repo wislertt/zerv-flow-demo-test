@@ -13,12 +13,17 @@ on:
                 description: "Key owner identifier (e.g., PR number, SHA, run ID)"
                 required: true
                 type: string
+            job_name:
+                description: "Custom name for the lock job"
+                required: false
+                type: string
 
 permissions:
     contents: write
 
 jobs:
     lock:
+        name: ${{ inputs.job_name || 'lock' }}
         runs-on: ubuntu-latest
         steps:
             - uses: github/lock@v3.0.1

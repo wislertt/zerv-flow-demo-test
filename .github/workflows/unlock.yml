@@ -1,4 +1,4 @@
-# TODO: Shared
+# TODO: shared
 
 name: unlock
 
@@ -18,12 +18,17 @@ on:
                 required: false
                 type: boolean
                 default: true
+            job_name:
+                description: "Custom name for the unlock job"
+                required: false
+                type: string
 
 permissions:
     contents: write
 
 jobs:
     unlock:
+        name: ${{ inputs.job_name || 'unlock' }}
         runs-on: ubuntu-latest
         steps:
             - uses: github/lock@v3.0.1
