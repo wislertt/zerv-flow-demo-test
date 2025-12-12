@@ -139,6 +139,11 @@ jobs:
                   # Execute the command
                   ZERV_RON=$(eval "$ZERV_CMD")
 
+                  # Debug: print ZERV_RON
+                  echo "=== ZERV_RON Output ==="
+                  echo "$ZERV_RON"
+                  echo "========================"
+
                   echo "zerv_ron<<EOF" >> $GITHUB_OUTPUT
                   echo "$ZERV_RON" >> $GITHUB_OUTPUT
                   echo "EOF" >> $GITHUB_OUTPUT
