@@ -18,7 +18,8 @@ jobs:
     # ====================================================
     check-pre-release:
         name: check-pre-release
-        uses: ./.github/workflows/check-pr-label-and-branch.yml
+        # uses: ./.github/workflows/check-pr-label-and-branch.yml
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@dev
         with:
             target_label: "pre-release"
             branch_prefix: "release/"
@@ -89,7 +90,8 @@ jobs:
     # ====================================================
     check-deploy-no-env-label:
         name: check-deploy-no-env-label
-        uses: ./.github/workflows/check-pr-label-and-branch.yml
+        # uses: ./.github/workflows/check-pr-label-and-branch.yml
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@dev
         with:
             target_label: "deploy"
 
