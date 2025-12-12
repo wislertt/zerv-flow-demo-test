@@ -36,7 +36,7 @@ jobs:
     lock:
         name: lock-${{ inputs.lock_key }}
         if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
-        uses: ./.github/workflows/lock.yml
+        uses: wislertt/zerv/.github/workflows/shared-lock.yml@dev
         with:
             key: ${{ inputs.lock_key }}
             key_owner: ${{ inputs.lock_key_owner }}
