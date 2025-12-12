@@ -1,3 +1,5 @@
+# TODO: shared
+
 name: lock
 
 on:
@@ -11,12 +13,17 @@ on:
                 description: "Key owner identifier (e.g., PR number, SHA, run ID)"
                 required: true
                 type: string
+            job_name:
+                description: "Custom name for the lock job"
+                required: false
+                type: string
 
 permissions:
     contents: write
 
 jobs:
     lock:
+        name: ${{ inputs.job_name || 'lock' }}
         runs-on: ubuntu-latest
         steps:
             - uses: github/lock@v3.0.1
@@ -60,6 +67,7 @@ jobs:
                     echo "✓ Key is not locked"
                     echo "should_proceed=true" >> $GITHUB_OUTPUT
                   fi
+
             - name: Prepare lock reason
               id: lock-reason
               run: |
