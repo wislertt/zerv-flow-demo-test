@@ -30,8 +30,8 @@ jobs:
         with:
             schema: ${{ (needs.check-pre-release.outputs.is_valid == 'true' && 'standard-base-prerelease-post') || '' }}
 
-    tag-release:
-        name: tag-release
+    tag-pre-release:
+        name: tag-pre-release
         needs: [zerv-versioning, check-pre-release]
         runs-on: ubuntu-latest
         permissions:
