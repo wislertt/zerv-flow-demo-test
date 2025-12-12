@@ -8,6 +8,10 @@ on:
             overridden_tag_version:
                 type: string
                 required: false
+            zerv_version:
+                type: string
+                required: false
+                description: "Version of zerv to install (e.g., '0.7.84'). If not specified, installs latest version"
             schema:
                 type: string
                 description: "Zerv flow schema"
@@ -90,7 +94,11 @@ jobs:
 
             - name: Install zerv
               run: |
-                  cargo install zerv || true
+                  if [ -n "${{ inputs.zerv_version }}" ]; then
+                      cargo install zerv --version ${{ inputs.zerv_version }} || true
+                  else
+                      cargo install zerv || true
+                  fi
                   zerv --version
 
             - name: Generate Zerv RON
