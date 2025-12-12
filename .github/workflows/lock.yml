@@ -1,3 +1,5 @@
+# TODO: shared
+
 name: lock
 
 on:
@@ -60,6 +62,7 @@ jobs:
                     echo "✓ Key is not locked"
                     echo "should_proceed=true" >> $GITHUB_OUTPUT
                   fi
+
             - name: Prepare lock reason
               id: lock-reason
               run: |

@@ -1,3 +1,5 @@
+# TODO: Shared
+
 name: zerv-versioning
 
 on:
@@ -5,11 +7,14 @@ on:
         inputs:
             overridden_tag_version:
                 type: string
+                required: false
             schema:
                 type: string
                 description: "Zerv flow schema"
+                required: false
             branch_rules:
                 type: string
+                required: false
                 # Note: This default is the same as zerv flow's built-in default.
                 # If branch_rules input is "", zerv flow will use its internal default rules
                 # and produce the same results.
@@ -36,14 +41,17 @@ on:
                     ]
             output_formats:
                 type: string
+                required: false
                 description: "JSON object mapping output names to zerv output formats"
                 default: '{"semver": "semver", "pep440": "pep440"}'
             output_templates:
                 type: string
+                required: false
                 description: "JSON object mapping output names to zerv output templates (without quotes)"
                 default: '{"docker_tag": "{{ semver_obj.docker }}"}'
             custom_outputs:
                 type: string
+                required: false
                 description: "JSON object mapping output names to full zerv command arguments"
                 default: '{"v_semver": "--output-prefix v --output-format semver"}'
 

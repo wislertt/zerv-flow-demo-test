@@ -1,3 +1,5 @@
+# TODO: shared. accept env [d, n, p] and prefix "deploy-" as input
+
 name: pr-unlock
 
 on:
