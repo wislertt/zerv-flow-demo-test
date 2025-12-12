@@ -49,11 +49,10 @@ jobs:
               run: |
                   LABELS='${{ needs.check-deploy-labels.outputs.labels }}'
                   LABEL_PREFIX="${{ inputs.deploy_label_prefix }}"
-                  ALL_ENVS=(${{ fromJson(inputs.environments) }})
                   MISSING_ENVS=()
 
-                  # Check which deploy labels are missing
-                  for ENV in "${ALL_ENVS[@]}"; do
+                  # Use jq to parse the environments array and iterate
+                  for ENV in $(echo '${{ inputs.environments }}' | jq -r '.[]'); do
                       if ! echo "$LABELS" | jq -e "has(\"${LABEL_PREFIX}${ENV}\")" > /dev/null 2>&1; then
                           MISSING_ENVS+=("$ENV")
                           echo "Missing ${LABEL_PREFIX}${ENV} label"
