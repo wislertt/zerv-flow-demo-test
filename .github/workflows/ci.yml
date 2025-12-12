@@ -4,6 +4,9 @@ on:
     # Rulesets for main branch
     # - Require status checks to pass -> Require branches to be up to date before merging
     pull_request:
+        # Note: 'labeled'/'unlabeled' triggers create parallel workflow runs when multiple labels change.
+        # This causes parallel deployments to the same environment.
+        # Remove these triggers if your deployment process cannot handle parallel deployments.
         types: [labeled, unlabeled, opened, synchronize, reopened]
 
 permissions:
@@ -52,14 +55,14 @@ jobs:
     # ====================================================
     # Test and Lint
     # ====================================================
-    # test:
-    #     uses: ./.github/workflows/test.yml
-    #     secrets:
-    #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    #         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    test:
+        uses: ./.github/workflows/test.yml
+        secrets:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-    # pre-commit:
-    #     uses: ./.github/workflows/pre-commit.yml
+    pre-commit:
+        uses: ./.github/workflows/pre-commit.yml
 
     # ====================================================
     # Deployment with environment
