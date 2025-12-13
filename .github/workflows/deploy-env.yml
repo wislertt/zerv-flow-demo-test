@@ -54,7 +54,6 @@ jobs:
                   echo "Semver: ${{ inputs.semver }}"
                   echo "PEP440: ${{ inputs.pep440 }}"
                   echo "Docker Tag: ${{ inputs.docker_tag }}"
-                  echo "Deploy label found: deploy-${{ inputs.env }}"
 
                   exit 1
 
@@ -62,7 +61,7 @@ jobs:
         name: unlock-${{ inputs.lock_key }}
         uses: wislertt/zerv/.github/workflows/shared-unlock.yml@dev
         needs: [lock, deploy]
-        if: inputs.unlock_after_deploy == true && (needs.lock.result == 'success' || needs.lock.result == 'skipped')
+        if: always() && inputs.unlock_after_deploy == true && needs.lock.result == 'success'
         with:
             key: ${{ inputs.lock_key }}
             key_owner: ${{ inputs.lock_key_owner }}
