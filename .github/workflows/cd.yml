@@ -29,7 +29,7 @@ jobs:
 
     create-version-prefix-tags:
         needs: zerv-versioning
-        uses: wislertt/zerv/.github/workflows/shared-create-tags.yml@dev
+        uses: wislertt/zerv/.github/workflows/shared-create-tags.yml@922cd87c3bf51c9a3f504b126fed975aefeaed1e # v0.7.87
         with:
             tags: >-
                 [
