@@ -18,8 +18,8 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
+            #   with:
+            #       fetch-depth: 0
 
             - name: Create or move tags and push
               run: |
@@ -41,11 +41,6 @@ jobs:
                   echo "Tags created/moved and pushed successfully:"
                   echo "  - $MAJOR_TAG"
                   echo "  - $MAJOR_MINOR_TAG"
-
-            - name: Echo version outputs
-              run: |
-                  echo "v_semver_major: ${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}"
-                  echo "v_semver_major_minor: ${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
 
             - name: Verify tags
               run: |
