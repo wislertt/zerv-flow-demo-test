@@ -27,6 +27,16 @@ jobs:
         if: needs.semantic-release.outputs.is_valid_semantic_release == 'true'
         uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@v0.7
 
+    create-version-prefix-tags:
+        needs: zerv-versioning
+        uses: wislertt/zerv/.github/workflows/shared-create-tags.yml@dev
+        with:
+            tags: >-
+                [
+                  "${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}",
+                  "${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
+                ]
+
     # ====================================================
     # Test and Lint
     # ====================================================
