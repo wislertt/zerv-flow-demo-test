@@ -8,17 +8,21 @@ permissions:
 
 jobs:
     zerv-versioning:
-        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@v0.7
-        with:
-            output_templates: >-
-                {
-                  "docker_tag": "{{ semver_obj.docker }}",
-                  "v_semver_major": "v{{ major }}",
-                  "v_semver_major_minor": "v{{ major }}.{{ minor }}"
-                }
+        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@dev
+        # with:
+        #     output_templates: >-
+        #         {
+        #           "docker_tag": "{{ semver_obj.docker }}",
+        #           "v_semver_major": "v{{ major }}",
+        #           "v_semver_major_minor": "v{{ major }}.{{ minor }}"
+        #         }
 
     create-tags:
         needs: zerv-versioning
-        uses: ./.github/workflows/reusable-create-tags.yml
+        uses: wislertt/zerv/.github/workflows/shared-create-tags.yml@dev
         with:
-            tags: '["${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}", "${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"]'
+            tags: >-
+                [
+                  "${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}",
+                  "${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
+                ]
