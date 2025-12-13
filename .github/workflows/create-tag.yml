@@ -1,0 +1,25 @@
+name: Create Tag v9.9.9
+
+on:
+    push:
+
+permissions:
+    contents: write
+
+jobs:
+    create-tag:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Create or move tag and push
+              run: |
+                  git config --local user.email "action@github.com"
+                  git config --local user.name "GitHub Action"
+                  git tag -fa v9.9.9 -m "Release version v9.9.9"
+                  git push origin v9.9.9 --force
+                  echo "Tag v9.9.9 created/moved and pushed successfully"
