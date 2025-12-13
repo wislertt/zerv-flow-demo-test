@@ -36,7 +36,7 @@ jobs:
     lock:
         name: lock-${{ inputs.lock_key }}
         if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
-        uses: wislertt/zerv/.github/workflows/shared-lock.yml@dev-2
+        uses: wislertt/zerv/.github/workflows/shared-lock.yml@main
         with:
             key: ${{ inputs.lock_key }}
             key_owner: ${{ inputs.lock_key_owner }}
@@ -56,7 +56,7 @@ jobs:
 
     unlock:
         name: unlock-${{ inputs.lock_key }}
-        uses: wislertt/zerv/.github/workflows/shared-unlock.yml@dev-2
+        uses: wislertt/zerv/.github/workflows/shared-unlock.yml@main
         needs: [lock, deploy]
         if: always() && inputs.unlock_after_deploy == true && needs.lock.result == 'success'
         with:
