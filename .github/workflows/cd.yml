@@ -17,23 +17,24 @@ jobs:
     # ====================================================
     semantic-release:
         name: semantic-release
-        uses: ./.github/workflows/semantic-release.yml
+        uses: wislertt/zerv/.github/workflows/shared-semantic-release.yml@main
         with:
             allowed_workflow_dispatch_branches: '["main"]'
+            fail_on_invalid_workflow_dispatch_ref: true
 
     zerv-versioning:
         needs: semantic-release
         if: needs.semantic-release.outputs.is_valid_semantic_release == 'true'
-        uses: ./.github/workflows/zerv-versioning.yml
+        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@main
 
     # ====================================================
     # Test and Lint
     # ====================================================
-    # test:
-    #     uses: ./.github/workflows/test.yml
-    #     secrets:
-    #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    #         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    test:
+        uses: ./.github/workflows/test.yml
+        secrets:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     # ====================================================
     # Deployment with environment

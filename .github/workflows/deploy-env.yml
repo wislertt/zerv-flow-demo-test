@@ -36,7 +36,7 @@ jobs:
     lock:
         name: lock-${{ inputs.lock_key }}
         if: fromJson(inputs.deploy_labels)[format('deploy-{0}', inputs.env)]
-        uses: ./.github/workflows/lock.yml
+        uses: wislertt/zerv/.github/workflows/shared-lock.yml@main
         with:
             key: ${{ inputs.lock_key }}
             key_owner: ${{ inputs.lock_key_owner }}
@@ -53,13 +53,12 @@ jobs:
                   echo "Semver: ${{ inputs.semver }}"
                   echo "PEP440: ${{ inputs.pep440 }}"
                   echo "Docker Tag: ${{ inputs.docker_tag }}"
-                  echo "Deploy label found: deploy-${{ inputs.env }}"
 
     unlock:
         name: unlock-${{ inputs.lock_key }}
-        uses: ./.github/workflows/unlock.yml
-        needs: deploy
-        if: inputs.unlock_after_deploy == true
+        uses: wislertt/zerv/.github/workflows/shared-unlock.yml@main
+        needs: [lock, deploy]
+        if: always() && inputs.unlock_after_deploy == true && needs.lock.result == 'success'
         with:
             key: ${{ inputs.lock_key }}
             key_owner: ${{ inputs.lock_key_owner }}
