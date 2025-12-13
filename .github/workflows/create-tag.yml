@@ -14,36 +14,6 @@ jobs:
 
     create-tag:
         needs: zerv-versioning
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-            #   with:
-            #       fetch-depth: 0
-
-            - name: Create or move tags and push
-              run: |
-                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
-                  git config --local user.name "github-actions[bot]"
-
-                  # Get versions from outputs
-                  MAJOR_TAG="${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}"
-                  MAJOR_MINOR_TAG="${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
-
-                  # Create or force-move tags
-                  git tag -fa "$MAJOR_TAG" -m "$MAJOR_TAG"
-                  git tag -fa "$MAJOR_MINOR_TAG" -m "$MAJOR_MINOR_TAG"
-
-                  # Push tags
-                  git push origin "$MAJOR_TAG" --force
-                  git push origin "$MAJOR_MINOR_TAG" --force
-
-                  echo "Tags created/moved and pushed successfully:"
-                  echo "  - $MAJOR_TAG"
-                  echo "  - $MAJOR_MINOR_TAG"
-
-            - name: Verify tags
-              run: |
-                  echo "Verifying tags on current commit..."
-                  git fetch --tags
-                  git tag --points-at HEAD
+        uses: ./.github/workflows/reusable-create-tags.yml
+        with:
+            tags: '["${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}", "${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"]'
