@@ -18,8 +18,15 @@ jobs:
 
             - name: Create or move tag and push
               run: |
-                  git config --local user.email "action@github.com"
-                  git config --local user.name "GitHub Action"
-                  git tag -fa v9.9.9 -m "Release version v9.9.9"
+                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
+                  git config --local user.name "github-actions[bot]"
+                  git tag -fa v9.9.9 -m "v9.9.9"
                   git push origin v9.9.9 --force
                   echo "Tag v9.9.9 created/moved and pushed successfully"
+
+            - name: Verify tag
+              run: |
+                  echo "Verifying tag was created..."
+                  git fetch --tags
+                  git show v9.9.9 --stat
+                  echo "Tag verification complete"
