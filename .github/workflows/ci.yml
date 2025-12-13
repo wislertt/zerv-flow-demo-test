@@ -82,9 +82,7 @@ jobs:
             docker_tag: ${{ fromJson(needs.zerv-versioning.outputs.versions).docker_tag }}
             deploy_labels: ${{ needs.check-deploy-env-labels.outputs.labels }}
             lock_key_owner: ${{ github.ref }}
-            # TODO: debugging
-            # unlock_after_deploy: false
-            unlock_after_deploy: true
+            unlock_after_deploy: false
 
     # ====================================================
     # Deployment without environment

@@ -47,15 +47,12 @@ jobs:
         needs: lock
         runs-on: ubuntu-latest
         steps:
-            #  TODO: debugging with exit 1
             - name: Dummy deploy with environment
               run: |
                   echo "Deploying to environment: ${{ inputs.env }}"
                   echo "Semver: ${{ inputs.semver }}"
                   echo "PEP440: ${{ inputs.pep440 }}"
                   echo "Docker Tag: ${{ inputs.docker_tag }}"
-
-                  exit 1
 
     unlock:
         name: unlock-${{ inputs.lock_key }}
