@@ -49,12 +49,6 @@ jobs:
 
             - name: Verify tags
               run: |
-                  echo "Verifying tags..."
+                  echo "Verifying tags on current commit..."
                   git fetch --tags
-
-                  MAJOR_TAG="${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}"
-                  MAJOR_MINOR_TAG="${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
-
-                  # Check if tags exist and show their commits
-                  echo "$MAJOR_TAG: $(git rev-parse "$MAJOR_TAG" 2>/dev/null || echo "not found")"
-                  echo "$MAJOR_MINOR_TAG: $(git rev-parse "$MAJOR_MINOR_TAG" 2>/dev/null || echo "not found")"
+                  git tag --points-at HEAD
