@@ -18,7 +18,7 @@ jobs:
     # ====================================================
     check-pre-release:
         name: check-pre-release
-        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@main
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@922cd87c3bf51c9a3f504b126fed975aefeaed1e # v0.7.87
         with:
             target_label: "pre-release"
             branch_prefix: "release/"
@@ -26,7 +26,7 @@ jobs:
     zerv-versioning:
         name: zerv-versioning
         needs: check-pre-release
-        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@main
+        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@922cd87c3bf51c9a3f504b126fed975aefeaed1e # v0.7.87
         with:
             schema: ${{ (needs.check-pre-release.outputs.is_valid == 'true' && 'standard-base-prerelease-post') || '' }}
 
@@ -58,21 +58,21 @@ jobs:
     # ====================================================
     # Test and Lint
     # ====================================================
-    # test:
-    #     uses: ./.github/workflows/test.yml
-    #     secrets:
-    #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    #         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    test:
+        uses: ./.github/workflows/test.yml
+        secrets:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-    # pre-commit:
-    #     uses: ./.github/workflows/pre-commit.yml
+    pre-commit:
+        uses: ./.github/workflows/pre-commit.yml
 
     # ====================================================
     # Deployment with environment
     # ====================================================
     check-deploy-env-labels:
         name: check-deploy-env-labels
-        uses: wislertt/zerv/.github/workflows/shared-check-pr-labels-with-prefix.yml@main
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-labels-with-prefix.yml@922cd87c3bf51c9a3f504b126fed975aefeaed1e # v0.7.87
         with:
             prefix: "deploy-"
 
@@ -92,7 +92,7 @@ jobs:
     # ====================================================
     check-deploy-no-env-label:
         name: check-deploy-no-env-label
-        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@main
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@922cd87c3bf51c9a3f504b126fed975aefeaed1e # v0.7.87
         with:
             target_label: "deploy"
 
