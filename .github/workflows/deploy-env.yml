@@ -47,6 +47,7 @@ jobs:
         needs: lock
         runs-on: ubuntu-latest
         steps:
+            #  TODO: debugging with exit 1
             - name: Dummy deploy with environment
               run: |
                   echo "Deploying to environment: ${{ inputs.env }}"
@@ -55,11 +56,13 @@ jobs:
                   echo "Docker Tag: ${{ inputs.docker_tag }}"
                   echo "Deploy label found: deploy-${{ inputs.env }}"
 
+                  exit 1
+
     unlock:
         name: unlock-${{ inputs.lock_key }}
         uses: wislertt/zerv/.github/workflows/shared-unlock.yml@dev
-        needs: deploy
-        if: inputs.unlock_after_deploy == true
+        needs: [lock, deploy]
+        if: inputs.unlock_after_deploy == true && (needs.lock.result == 'success' || needs.lock.result == 'skipped')
         with:
             key: ${{ inputs.lock_key }}
             key_owner: ${{ inputs.lock_key_owner }}
