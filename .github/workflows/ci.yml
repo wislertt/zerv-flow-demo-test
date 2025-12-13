@@ -18,7 +18,7 @@ jobs:
     # ====================================================
     check-pre-release:
         name: check-pre-release
-        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@main
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@v0.1.28
         with:
             target_label: "pre-release"
             branch_prefix: "release/"
@@ -26,7 +26,7 @@ jobs:
     zerv-versioning:
         name: zerv-versioning
         needs: check-pre-release
-        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@main
+        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@v0.1.28
         with:
             schema: ${{ (needs.check-pre-release.outputs.is_valid == 'true' && 'standard-base-prerelease-post') || '' }}
 
@@ -72,7 +72,7 @@ jobs:
     # ====================================================
     check-deploy-env-labels:
         name: check-deploy-env-labels
-        uses: wislertt/zerv/.github/workflows/shared-check-pr-labels-with-prefix.yml@main
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-labels-with-prefix.yml@v0.1.28
         with:
             prefix: "deploy-"
 
@@ -92,7 +92,7 @@ jobs:
     # ====================================================
     check-deploy-no-env-label:
         name: check-deploy-no-env-label
-        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@main
+        uses: wislertt/zerv/.github/workflows/shared-check-pr-label-and-branch.yml@v0.1.28
         with:
             target_label: "deploy"
 
