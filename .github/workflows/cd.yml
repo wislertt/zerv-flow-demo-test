@@ -20,7 +20,7 @@ jobs:
         uses: wislertt/zerv/.github/workflows/shared-semantic-release.yml@dev
         with:
             allowed_workflow_dispatch_branches: '["main"]'
-            fail_on_invalid_ref: true
+            fail_on_invalid_workflow_dispatch_ref: true
 
     zerv-versioning:
         needs: semantic-release
