@@ -14,7 +14,7 @@ jobs:
     #         output_templates: '{"docker_tag": "{{ semver_obj.docker }}", "v_semver_major": "v{{ major }}", "v_semver_major_minor": "v{{ major }}.{{ minor }}"}'
 
     create-tag:
-        needs: zerv-versioning
+        # needs: zerv-versioning
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
