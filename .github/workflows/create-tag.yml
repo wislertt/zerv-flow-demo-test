@@ -14,6 +14,7 @@ jobs:
             output_templates: '{"docker_tag": "{{ semver_obj.docker }}", "v_semver_major": "v{{ major }}", "v_semver_major_minor": "v{{ major }}.{{ minor }}"}'
 
     create-tag:
+        needs: zerv-versioning
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -30,9 +31,10 @@ jobs:
                   git push origin v9.9.9 --force
                   echo "Tag v9.9.9 created/moved and pushed successfully"
 
-
-                  echo v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}
-                  echo v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}
+            - name: Echo version outputs
+              run: |
+                  echo "v_semver_major: v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}"
+                  echo "v_semver_major_minor: v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
 
             - name: Verify tag
               run: |
