@@ -7,11 +7,11 @@ permissions:
     contents: write
 
 jobs:
-    zerv-versioning:
-        if: needs.semantic-release.outputs.is_valid_semantic_release == 'true'
-        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@v0.7
-        with:
-            output_templates: '{"docker_tag": "{{ semver_obj.docker }}", "v_semver_major": "v{{ major }}", "v_semver_major_minor": "v{{ major }}.{{ minor }}"}'
+    # zerv-versioning:
+    #     if: needs.semantic-release.outputs.is_valid_semantic_release == 'true'
+    #     uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@v0.7
+    #     with:
+    #         output_templates: '{"docker_tag": "{{ semver_obj.docker }}", "v_semver_major": "v{{ major }}", "v_semver_major_minor": "v{{ major }}.{{ minor }}"}'
 
     create-tag:
         needs: zerv-versioning
@@ -31,10 +31,10 @@ jobs:
                   git push origin v9.9.9 --force
                   echo "Tag v9.9.9 created/moved and pushed successfully"
 
-            - name: Echo version outputs
-              run: |
-                  echo "v_semver_major: v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}"
-                  echo "v_semver_major_minor: v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
+            # - name: Echo version outputs
+            #   run: |
+            #       echo "v_semver_major: v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}"
+            #       echo "v_semver_major_minor: v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
 
             - name: Verify tag
               run: |
