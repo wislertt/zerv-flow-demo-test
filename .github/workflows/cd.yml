@@ -17,7 +17,7 @@ jobs:
     # ====================================================
     semantic-release:
         name: semantic-release
-        uses: wislertt/zerv/.github/workflows/shared-semantic-release.yml@v0.7.86
+        uses: wislertt/zerv/.github/workflows/shared-semantic-release.yml@v0.7
         with:
             allowed_workflow_dispatch_branches: '["main"]'
             fail_on_invalid_workflow_dispatch_ref: true
@@ -25,7 +25,7 @@ jobs:
     zerv-versioning:
         needs: semantic-release
         if: needs.semantic-release.outputs.is_valid_semantic_release == 'true'
-        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@v0.7.86
+        uses: wislertt/zerv/.github/workflows/shared-zerv-versioning.yml@v0.7
 
     # ====================================================
     # Test and Lint
