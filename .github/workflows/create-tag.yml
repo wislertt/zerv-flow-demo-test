@@ -44,21 +44,17 @@ jobs:
 
             - name: Echo version outputs
               run: |
-                  echo "v_semver_major: v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}"
-                  echo "v_semver_major_minor: v${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
+                  echo "v_semver_major: ${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}"
+                  echo "v_semver_major_minor: ${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
 
             - name: Verify tags
               run: |
-                  echo "Verifying tags were created..."
+                  echo "Verifying tags..."
                   git fetch --tags
 
                   MAJOR_TAG="${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major }}"
                   MAJOR_MINOR_TAG="${{ fromJson(needs.zerv-versioning.outputs.versions).v_semver_major_minor }}"
 
-                  echo "Verifying $MAJOR_TAG:"
-                  git show "$MAJOR_TAG" --stat || echo "Tag $MAJOR_TAG not found"
-
-                  echo "Verifying $MAJOR_MINOR_TAG:"
-                  git show "$MAJOR_MINOR_TAG" --stat || echo "Tag $MAJOR_MINOR_TAG not found"
-
-                  echo "Tag verification complete"
+                  # Check if tags exist and show their commits
+                  echo "$MAJOR_TAG: $(git rev-parse "$MAJOR_TAG" 2>/dev/null || echo "not found")"
+                  echo "$MAJOR_MINOR_TAG: $(git rev-parse "$MAJOR_MINOR_TAG" 2>/dev/null || echo "not found")"
